@@ -11,26 +11,28 @@ head(output)
 #Ncatch_obs 720
 #Nsurvey_obs 1680
 
-#read survey data obs_survey_biomass(i), pred_survey_index(i) 
-survey_biom<-data.frame(output$survey_biomass)
-colnames(survey_biom) <- c('survey','year','species','obs_survey_biomass','cv','pred_survey_index','resid_survey','nll_survey')
+#read observed survey size data obs_survey_biomass(i), pred_survey_index(i) 
+obs_survey_size<-data.frame(output$obs_survey_size)
+colnames(obs_survey_size) <- c('survey','year','species','type','InpN','x','obs_1','obs_2','obs_3','obs_4')
+obs_survey_size$label<-rep(("survey"),each=1680)
 #dim(survey_biom) #1680
 
-#read survey size data obs_survey_size(i) pred_survey_size(i)
-survey_size<-data.frame(output$survey_size)
-colnames(survey_size) <- c('survey','year','species','type','effN','x','1','2','3','4','pred_survey_size','nll_survey')
-survey_size$label<-rep(("survey"),each=1680)
-#dim(survey_size) #1680
+#read predicted survey size data obs_survey_size(i) pred_survey_size(i)
+pred_survey_size<-data.frame(output$survey_size)
+colnames(pred_survey_size) <- c('survey','year','species','type','effN','x','pred_1','pred_2','pred_3','pred_4','pred_survey_size','nll_survey')
+pred_survey_size$label<-rep(("survey"),each=1680)
+#dim(pred_survey_size) #1680
 
-#read catch data obs_catch_biomass(i) pred_catch_biomass(i)
-catch_biom<-data.frame(output$catch_data)
-colnames(catch_biom) <- c('fleet','area','year','species','obs_catch_biomass','cv','pred_catch_biomass','resid_catch','nll_catch')
-#dim(catch_biom) #720
+#read observed catch size data obs_catch_size(i) 
+obs_catch_size<-data.frame(output$obs_catch_size)
+colnames(obs_catch_size) <- c('fleet','area','year','species','type','InpN','x','obs_1','obs_2','obs_3','obs_4')
+obs_catch_size$label<-rep(("catch"),each=476)
+#dim(catch_size) #476 ???????? 
 
-#read catch size data obs_catch_size(i) pred_catch_size(i)
-catch_size<-data.frame(output$catch_size)
-colnames(catch_size) <- c('fleet','area','year','species','type','effN','x','1','2','3','4','pred_catch_size','nll_catch')
-catch_size$label<-rep(("catch"),each=476)
+#read predicted catch size data obs_catch_size(i) pred_catch_size(i)
+pred_catch_size<-data.frame(output$catch_size)
+colnames(pred_catch_size) <- c('fleet','area','year','species','type','effN','x','pred_1','pred_2','pred_3','pred_4','pred_catch_size','nll_catch')
+pred_catch_size$label<-rep(("catch"),each=476)
 #dim(catch_size) #476 ???????? 
 
 #read diet prop data obs_dietprop(i) pred_dietprop(i) 
@@ -40,12 +42,12 @@ diet_prop$label<-rep(("diet"),each=4721)
 #dim(diet_prop) #4721
 
 #create table with catch size variables
-Table_size <- data.frame(cbind(catch_size$year,catch_size$label,catch_size$fleet,catch_size$species, catch_size$'1', catch_size$'2', catch_size$'3', catch_size$'4',catch_size$effN, catch_size$pred_catch_size))
-colnames(Table_size) <- c('Year','Label','Fleet/Survey','Species','X1','X2','X3','X4','effN','pred_value')
+Table_size <- data.frame(cbind(pred_catch_size$year,pred_catch_size$label,pred_catch_size$fleet,pred_catch_size$species, obs_catch_size$'obs_1', obs_catch_size$'obs_2', obs_catch_size$'obs_3', obs_catch_size$'obs_4',pred_catch_size$'pred_1', pred_catch_size$'pred_2', pred_catch_size$'pred_3', pred_catch_size$'pred_4',pred_catch_size$effN, pred_catch_size$pred_catch_size))
+colnames(Table_size) <- c('Year','Label','Fleet/Survey','Species','obs_1','obs_2','obs_3','obs_4','pred_1','pred_2','pred_3','pred_4','effN','pred_value')
 
 #create table with survey size variables
-Table_survey <- data.frame(cbind(survey_size$year,survey_size$label,survey_size$survey,survey_size$species, survey_size$'1', survey_size$'2', survey_size$'3', survey_size$'4',survey_size$effN, survey_size$pred_survey_size))
-colnames(Table_survey) <- c('Year','Label','Fleet/Survey','Species','X1','X2','X3','X4','effN','pred_value')
+Table_survey <- data.frame(cbind(pred_survey_size$year,pred_survey_size$label,pred_survey_size$survey,pred_survey_size$species, obs_survey_size$'obs_1', obs_survey_size$'obs_2', obs_survey_size$'obs_3', obs_survey_size$'obs_4', pred_survey_size$'pred_1', pred_survey_size$'pred_2', pred_survey_size$'pred_3', pred_survey_size$'pred_4',pred_survey_size$effN, pred_survey_size$pred_survey_size))
+colnames(Table_survey) <- c('Year','Label','Fleet/Survey','Species','obs_1','obs_2','obs_3','obs_4','pred_1','pred_2','pred_3','pred_4','effN','pred_value')
 
 #not working yet
 #create table with diet prop variables
