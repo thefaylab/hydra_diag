@@ -26,9 +26,10 @@ pred_surv<-output$pred_survey_size
 obs_survey$pred_surv<-pred_surv
 nll_survey<-output$nll_survey_size
 obs_survey$nll_surv<-nll_survey
+obs_survey$pearson<-((obs_survey$value-obs_survey$pred_surv)/sqrt(obs_survey$pred_surv))
 
 colnames(obs_survey) <- c('number','year','species','type','InpN','lenbin','obs_value','label',
-                          'pred_value','nll')
+                          'pred_value','nll','pearson')
 
 
 ######### READ OBSERVED AND PREDICTED CATCH VALUES ###################
@@ -45,12 +46,14 @@ pred_catch<-output$pred_catch_size
 obs_catch$pred_catch<-pred_catch
 nll_catch<-output$nll_catch_size
 obs_catch$nll_catch<-nll_catch
+obs_catch$pearson<-((obs_catch$value-obs_catch$pred_catch)/sqrt(obs_catch$pred_catch))
 
 colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin','obs_value','label',
-                         'pred_value','nll')
+                         'pred_value','nll','pearson')
 
 
 mydata<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
+
 
 #### OK 
 
@@ -60,6 +63,10 @@ mydata<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
 obs_diet<-read.table("hydra_sim_NOBA-ts.dat", skip=4724, nrows=4721, header=F)
 obs_diet$label<-rep(("diet"),each=4721)
 dim(obs_diet) #4721
+colnames(obs_diet) <- c('number','year','species','lenbin','InpN','wt_prey_1','wt_prey_2','wt_prey_3','wt_prey_4','wt_prey_5','wt_prey_6','wt_prey_7','wt_prey_8','wt_prey_9','wt_prey_10','wt_prey_11','other','label')
+
+
+
 
 #I need to move the sprecies prop (wt_prey_1	wt_prey_2.....) down (as rows) and not to the side (as columns)
 
@@ -71,8 +78,6 @@ nll_diet<-output$nll_dietprop
 obs_diet$nll_diet<-nll_diet
 
 
-colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin','obs_value','label',
-                         'pred_value','nll')
 
 
 
