@@ -52,39 +52,41 @@ colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin'
                          'pred_value','nll','pearson')
 
 
-mydata<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
-
-
-#### OK 
-
+diet_catch<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
 
 ######### READ OBSERVED AND PREDICTED DIET PROPORTION VALUES ###################
 
 obs_diet<-read.table("hydra_sim_NOBA-ts.dat", skip=4724, nrows=4721, header=F)
-obs_diet$label<-rep(("diet"),each=4721)
-dim(obs_diet) #4721
-colnames(obs_diet) <- c('number','year','species','lenbin','InpN','wt_prey_1','wt_prey_2','wt_prey_3','wt_prey_4','wt_prey_5','wt_prey_6','wt_prey_7','wt_prey_8','wt_prey_9','wt_prey_10','wt_prey_11','other','label')
+#obs_diet$label<-rep(("diet"),each=4721)
+obs_diet<-obs_diet %>% pivot_longer(cols=6:17, names_to = "lenbin") %>%
+  mutate(lenbin = as.integer(str_remove(lenbin, "V"))) %>%
+  filter(value >0 ) 
+obs_diet$label<-rep(("diet"),each=22810)
+#dim(obs_diet) #22810
 
-
-
-
-#I need to move the sprecies prop (wt_prey_1	wt_prey_2.....) down (as rows) and not to the side (as columns)
-
-
-####### pred values 
 pred_diet<-output$pred_dietprop
 obs_diet$pred_diet<-pred_diet
 nll_diet<-output$nll_dietprop
 obs_diet$nll_diet<-nll_diet
+obs_diet$pearson<-((obs_diet$value-obs_diet$pred_diet)/sqrt(obs_diet$pred_diet))
+colnames(obs_diet) <- c('number','year','species','lenbin','InpN','prey','obs_value','label', 'pred_value','nll','pearson')
+
+
+mydata<-full_join(diet_catch, obs_diet, by = NULL,copy = FALSE)
+#mydata$prey<-replace(mydata$prey=='NA' , -99) #??????
+mydata$prey[is.na(mydata$prey)] <- -99
+
+
+#write.csv(mydata, file = "mydata.csv", row.names = T)
 
 
 
 
 
-################# CREATE THE TABLE ######################################\
 
-obs_values<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
-#write.csv(obs_values, file = "observed_values.csv", row.names = T)
+
+
+
 
 
 
