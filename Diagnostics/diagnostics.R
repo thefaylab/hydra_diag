@@ -73,8 +73,9 @@ colnames(obs_diet) <- c('number','year','species','lenbin','InpN','prey','obs_va
 
 
 mydata<-full_join(diet_catch, obs_diet, by = NULL,copy = FALSE)
-#mydata$prey<-replace(mydata$prey=='NA' , -99) #??????
 mydata$prey[is.na(mydata$prey)] <- -99
+mydata$area[is.na(mydata$area)] <- 1
+mydata$type[is.na(mydata$type)] <- 0
 
 
 #write.csv(mydata, file = "mydata.csv", row.names = T)
