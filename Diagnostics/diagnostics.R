@@ -1,5 +1,5 @@
 rm(list = ls())
-setwd("C:/Users/macristina.perez/Documents/UMassD/2021/Tesis/hydra_sim/Diagnostics")
+setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
 library(tidyverse)
 source("read.report.R")
 output<-reptoRlist("hydra_sim.rep")
@@ -79,6 +79,47 @@ mydata$type[is.na(mydata$type)] <- 0
 
 
 #write.csv(mydata, file = "mydata.csv", row.names = T)
+
+
+#########################################################################################
+#remotes::install_github("r4ss/r4ss")
+library(r4ss)
+devtools::source_url("https://github.com/r4ss/r4ss/blob/main/R/SSplotComps.R?raw=TRUE")
+#########################################################################################
+
+
+rm(list = ls())
+setwd("C:/Users/macristina.perez/Documents/UMassD/Classes/Tesis/hydra_sim/Diagnostics")
+data<-read.csv("mydata.csv", header = T)
+head(data)
+
+# plots from 1 to 10 --> for different fleets ... change to species 
+# and 21 to 24 aggregated by year
+
+#diagnostic plots for the fits to the composition data (both size composition & diet composition).
+#oldnames = c("fleet", "year", "seas", "gender", "morph", "label"),
+#newnames = c("Fleet", "Yr", "Seas", "Sex", "Morph", "Label")
+
+source("SSplotComp.R")
+replist<- (data)
+names(replist)
+
+SSplotComps(replist)
+
+
+library(ggplot2)
+
+sort(unique(replist$species))  # 1  2  3  4  5  6  7  8  9 10 11
+
+temp = replist[which(replist$label == "catch"),]
+
+#temp[which(temp$species == 2 & temp$year == 80 & temp$lenbin == 3),]
+
+
+ggplot(temp[which(temp$species == 1),], aes(x = lenbin, y = pred_value)) +
+  geom_line()+
+  geom_line(aes(x = lenbin, y = obs_value), color = "red")+
+  facet_wrap(.~year)
 
 
 
