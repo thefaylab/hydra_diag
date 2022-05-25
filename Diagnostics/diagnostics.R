@@ -127,22 +127,18 @@ str(data)
 
 
 #select type of data "label= catch, survey or diet" 
-temp = data[which(data$label == "catch"),]
+temp.catch = data[which(data$label == "catch"),]
+temp.surv = data[which(data$label == "survey"),]
 
-# to save
-#ppi <- 300
-#png("complot_catch.png", width=10*ppi, height=4.5*ppi, res=ppi)
-#nbb = 30
-
-#plot 1 length composition plots by species 
-
-a<- ggplot(temp[which(temp$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
+#plot 1 length composition plots by species (catch)
+a<- ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
 a<- a + geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black"))
-a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Length composition by year")
+a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year")
 a<- a + geom_line(aes(x = lenbin, y = pred_value), color = "green")
 a<- a + facet_wrap(.~year)
 a<- a + annotate("text",  x = 4.0, y = 0.6, label = "Sample size=", size=3)
 a
+
 
 # trying to add each sample size per year ..... NOT WORKING
 #tapply(temp$InpN[which(temp$species == 1)], temp$year[which(temp$species == 1)], function(x) length(unique(x)))
@@ -150,10 +146,15 @@ N<-as.numeric(t(tapply(temp$InpN[which(temp$species == 1)], temp$year[which(temp
 a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep=""), size=3)
 
 
-#plot 1 length composition plots by species aggregated by year 
 
-
-
+#plot 1 length composition plots by species (survey)
+a<- ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
+a<- a + geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black"))
+a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year")
+a<- a + geom_line(aes(x = lenbin, y = pred_value), color = "blue")
+a<- a + facet_wrap(.~year)
+a<- a + annotate("text",  x = 4.0, y = 0.6, label = "Sample size=", size=3)
+a
 
 
 #plot 2 pearson residuals bubble plot 
@@ -163,10 +164,14 @@ ggplot(temp, aes(x=year, y=lenbin, size = res_abs, color=factor(resid))) +
   facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
 
 
+# adding some text 
+data_text = data.frame(x = 20, y = 3.5, species = unique(temp$species), label = c("Text_1", "", "Text_3", "Text_", "", "Text", "Text_R", "", ""))
 
-
-
-
+ggplot(temp, aes(x = year, y = lenbin)) + 
+  geom_point(aes(color = factor(resid), size = res_abs), alpha = 0.5) +
+  scale_color_manual(values = c("blue", "lightblue")) +  theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  facet_wrap(.~species) + theme(legend.position = ' ') + labs(x="year", y="length bin", title="Pearson residuals (catch)")# +
+ # geom_text(data = data_text, aes(x = x, y = y, label = label))
 
 
 
