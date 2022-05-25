@@ -81,45 +81,86 @@ mydata$type[is.na(mydata$type)] <- 0
 #write.csv(mydata, file = "mydata.csv", row.names = T)
 
 
-#########################################################################################
-#remotes::install_github("r4ss/r4ss")
-library(r4ss)
-devtools::source_url("https://github.com/r4ss/r4ss/blob/main/R/SSplotComps.R?raw=TRUE")
-#########################################################################################
+#####################################
+############# PLOTS ##################
+#####################################
 
 
 rm(list = ls())
-setwd("C:/Users/macristina.perez/Documents/UMassD/Classes/Tesis/hydra_sim/Diagnostics")
+setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
 data<-read.csv("mydata.csv", header = T)
 head(data)
 
-# plots from 1 to 10 --> for different fleets ... change to species 
-# and 21 to 24 aggregated by year
-
-#diagnostic plots for the fits to the composition data (both size composition & diet composition).
-#oldnames = c("fleet", "year", "seas", "gender", "morph", "label"),
-#newnames = c("Fleet", "Yr", "Seas", "Sex", "Morph", "Label")
-
-source("SSplotComp.R")
-replist<- (data)
-names(replist)
-
-SSplotComps(replist)
-
-
 library(ggplot2)
 
-sort(unique(replist$species))  # 1  2  3  4  5  6  7  8  9 10 11
 
-temp = replist[which(replist$label == "catch"),]
+names(data)
+str(data)
 
-#temp[which(temp$species == 2 & temp$year == 80 & temp$lenbin == 3),]
+#data.frame':	31854 obs. of  13 variables:
+# $ number    : int  1 1 1 1 1 1 1 1 1 1 ...
+# $ area      : int  1 1 1 1 1 1 1 1 1 1 ...
+# $ year      : int  15 15 15 16 16 16 16 17 17 17 ...
+# $ species   : int  1 1 1 1 1 1 1 1 1 1 ...
+# $ type      : int  0 0 0 0 0 0 0 0 0 0 ...
+# $ InpN      : int  605 605 605 792 792 792 792 820 820 820 ...
+# $ lenbin    : int  2 3 4 2 3 4 5 2 3 4 ...
+# $ obs_value : num  0.0281 0.557 0.4149 0.0278 0.5202 ...
+# $ label     : chr  "catch" "catch" "catch" "catch" ...
+# $ pred_value: num  0.3838 0.2157 0.0369 0.3505 0.2321 ...
+# $ nll       : num  44.4 -319.8 -607.2 55.8 -332.5 ...
+# $ pearson   : num  -0.574 0.735 1.967 -0.545 0.598 ...
+# $ prey      : int  -99 -99 -99 -99 -99 -99 -99 -99 -99 -99 ...
+
+# SPECIES 
+# 1 spinydog
+# 2 winterskate
+# 3 Aherring
+# 4 Acod
+# 5 haddock
+# 6 yellowtailfl
+# 7 winterfl
+# 8 Amackerel
+# 9 silverhake
+# 10 goosefish
+# 11 ?
 
 
-ggplot(temp[which(temp$species == 1),], aes(x = lenbin, y = pred_value)) +
-  geom_line()+
-  geom_line(aes(x = lenbin, y = obs_value), color = "red")+
-  facet_wrap(.~year)
+#select type of data "label= catch, survey or diet" 
+temp = data[which(data$label == "catch"),]
+
+# to save
+#ppi <- 300
+#png("complot_catch.png", width=10*ppi, height=4.5*ppi, res=ppi)
+#nbb = 30
+
+#plot 1 length composition plots by species 
+
+a<- ggplot(temp[which(temp$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
+a<- a + geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black"))
+a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Length composition by year")
+a<- a + geom_line(aes(x = lenbin, y = pred_value), color = "green")
+a<- a + facet_wrap(.~year)
+a<- a + annotate("text",  x = 4.0, y = 0.6, label = "Sample size=", size=3)
+a
+
+# trying to add each sample size per year ..... NOT WORKING
+#tapply(temp$InpN[which(temp$species == 1)], temp$year[which(temp$species == 1)], function(x) length(unique(x)))
+N<-as.numeric(t(tapply(temp$InpN[which(temp$species == 1)], temp$year[which(temp$species == 1)], unique)))
+a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep=""), size=3)
+
+
+#plot 1 length composition plots by species aggregated by year 
+
+
+
+
+
+#plot 2 pearson residuals bubble plot 
+
+ggplot(temp, aes(x=year, y=lenbin, size = res_abs, color=factor(resid))) +
+  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
 
 
 
