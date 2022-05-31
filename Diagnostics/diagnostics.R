@@ -131,6 +131,8 @@ temp.catch = data[which(data$label == "catch"),]
 temp.surv = data[which(data$label == "survey"),]
 
 #plot 1 length composition plots by species (catch)
+#x11()
+tiff("complot_catch.jpeg", width=3000, height=2500, res=250) 
 a<- ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
 a<- a + geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black"))
 a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year")
@@ -138,6 +140,7 @@ a<- a + geom_line(aes(x = lenbin, y = pred_value), color = "green")
 a<- a + facet_wrap(.~year)
 a<- a + annotate("text",  x = 4.0, y = 0.6, label = "Sample size=", size=3)
 a
+dev.off()
 
 
 # trying to add each sample size per year ..... NOT WORKING
@@ -148,6 +151,7 @@ a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep
 
 
 #plot 1 length composition plots by species (survey)
+tiff("complot_survey.jpeg", width=3000, height=2500, res=250) 
 a<- ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
 a<- a + geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black"))
 a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year")
@@ -155,29 +159,83 @@ a<- a + geom_line(aes(x = lenbin, y = pred_value), color = "blue")
 a<- a + facet_wrap(.~year)
 a<- a + annotate("text",  x = 4.0, y = 0.6, label = "Sample size=", size=3)
 a
-
+dev.off()
 
 #plot 2 pearson residuals bubble plot 
 
-ggplot(temp, aes(x=year, y=lenbin, size = res_abs, color=factor(resid))) +
+tiff("bubbleplot_catch.jpeg", width=3000, height=2500, res=250) 
+ggplot(temp.catch, aes(x=year, y=lenbin, size = res_abs, color=factor(resid))) +
   geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
-
+dev.off()
 
 # adding some text 
-data_text = data.frame(x = 20, y = 3.5, species = unique(temp$species), label = c("Text_1", "", "Text_3", "Text_", "", "Text", "Text_R", "", ""))
+#data_text = data.frame(x = 20, y = 3.5, species = unique(temp$species), label = c("Text_1", "", "Text_3", "Text_", "", "Text", "Text_R", "", ""))
 
-ggplot(temp, aes(x = year, y = lenbin)) + 
-  geom_point(aes(color = factor(resid), size = res_abs), alpha = 0.5) +
-  scale_color_manual(values = c("blue", "lightblue")) +  theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  facet_wrap(.~species) + theme(legend.position = ' ') + labs(x="year", y="length bin", title="Pearson residuals (catch)")# +
+#ggplot(temp.catch, aes(x = year, y = lenbin)) + 
+ # geom_point(aes(color = factor(resid), size = res_abs), alpha = 0.5) +
+#  scale_color_manual(values = c("blue", "lightblue")) +  theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+#  facet_wrap(.~species) + theme(legend.position = ' ') + labs(x="year", y="length bin", title="Pearson residuals (catch)")# +
  # geom_text(data = data_text, aes(x = x, y = y, label = label))
 
 
+# plot 3 length composition plots by species aggregated by year (catch)
 
+temporal2 = numeric()
+especie = numeric(); especie = sort(unique(temp.catch$species)) # especies 
+for(e in 1:length(especie)){
+  pos1 = numeric(); pos1 = which(temp.catch$species == especie[e])
+  
+  temporal1 = numeric()
+  year = numeric(); year = sort(unique(temp.catch$year[pos1])) # ano
+  for(y in 1:length(year)){
+    pos2 = numeric(); pos2 = which(temp.catch$year[pos1] == year[y])
+    
+    N = numeric(); N = unique(temp.catch$InpN[pos1][pos2]) # sample size para el estrato especie ano 
+    n_ejemplares_obs = numeric(); n_ejemplares_obs = round(N * temp.catch$obs_value[pos1][pos2] , 0) # crea vector de proporcion por el sample size
+    n_ejemplares_est = numeric(); n_ejemplares_est = round(N * temp.catch$pred_value[pos1][pos2], 0)
+    
+    tt1 = numeric()
+    tt1 = data.frame(YEAR = year[y], BIN = temp.catch$lenbin[pos1][pos2], N = N, N_EJEM_OBS = n_ejemplares_obs, N_EJEM_EST = n_ejemplares_est)
+    
+    temporal1 = rbind(temporal1, tt1) # guarda la proporcion * sample size para la especie seleccionada y ano 
+  }
+  
+  bin1_obs = numeric(); bin1_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 1)])
+  bin2_obs = numeric(); bin2_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 2)])
+  bin3_obs = numeric(); bin3_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 3)])
+  bin4_obs = numeric(); bin4_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 4)])
+  bin5_obs = numeric(); bin5_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 5)])
+  
+  total_obs = sum(bin1_obs, bin2_obs, bin3_obs, bin4_obs, bin5_obs)
+  prop_new_obs = numeric(); prop_new_obs = c(bin1_obs, bin2_obs, bin3_obs, bin4_obs, bin5_obs) / total_obs
+  
+  bin1_pred = numeric(); bin1_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 1)])
+  bin2_pred = numeric(); bin2_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 2)])
+  bin3_pred = numeric(); bin3_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 3)])
+  bin4_pred = numeric(); bin4_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 4)])
+  bin5_pred = numeric(); bin5_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 5)])
+  
+  total_pred = sum(bin1_pred, bin2_pred, bin3_pred, bin4_pred, bin5_pred)
+  prop_new_est = numeric(); prop_new_est = c(bin1_pred, bin2_pred, bin3_pred, bin4_pred, bin5_pred) / total_pred
+  
+  tt2 = numeric()
+  tt2 = data.frame(ESPECIE = especie[e], BIN = seq(1, 5, 1), PROP_NEW_OBS = prop_new_obs, PROP_NEW_EST = prop_new_est)
+  
+  temporal2 = rbind(temporal2, tt2) # almacena por cada especie 
+}
 
+# SUMA DE PROPORCIONES
 
-
-
-
+x11()
+tiff("compplot_year.jpeg", width=3000, height=2500, res=250) 
+ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
+  geom_line() + 
+  geom_point() + 
+  geom_line(aes(x = BIN, y = PROP_NEW_EST), color = "green") +
+  annotate("text",  x = 4.3, y = 0.9, label = "Sample size=", size=4) +
+  theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  labs(x="length bin", y="proportion value", title="Length composition aggregated by year") +
+  facet_wrap(.~ESPECIE) 
+dev.off()
 
