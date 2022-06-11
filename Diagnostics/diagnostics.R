@@ -128,13 +128,13 @@ a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep
 
 #plot 1 length composition plots by species (survey)
 tiff("complot_survey.jpeg", width=3000, height=2500, res=250) 
-a<- ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8))
-a<- a + geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black"))
-a<- a + geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year")
-a<- a + geom_line(aes(x = lenbin, y = pred_value), color = "blue")
-a<- a + facet_wrap(.~year)
-a<- a + annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-a
+ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
+geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
+geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
+facet_wrap(.~year,dir="v") +
+annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+
 dev.off()
 
 #plot 2 pearson residuals bubble plot 
@@ -213,5 +213,6 @@ ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
   theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   labs(x="length bin", y="proportion value", title="Length composition aggregated by year") +
   facet_wrap(.~ESPECIE) 
+
 dev.off()
 
