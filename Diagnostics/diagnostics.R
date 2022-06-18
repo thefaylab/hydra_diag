@@ -121,14 +121,6 @@ ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_valu
 dev.off()
 
 
-ggplot(temp.diet[which(temp.diet$species == 1 & temp.diet$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Diet length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-
-
 ##############
 ### species = 2
 ##############
