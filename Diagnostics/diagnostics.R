@@ -529,6 +529,75 @@ ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual)))
 dev.off()
 
 
+#plot 4 proportions of stomach weights for each prey 
+#given a predator size class
+
+predicted<- as.data.frame(cbind(temp.diet$number, temp.diet$year, temp.diet$species,
+                                temp.diet$lenbin, temp.diet$pred_value, temp.diet$prey))
+colnames(predicted) <- c('number','year','species','lenbin', 'prop', 'prey')
+predicted$type2<-rep(("e"),each=22810)
+predicted$sizefit<- paste0(predicted$lenbin,".",predicted$type2)
+
+observed<- as.data.frame(cbind(temp.diet$number, temp.diet$year, temp.diet$species,
+                               temp.diet$lenbin, temp.diet$obs_value, temp.diet$prey))
+colnames(observed) <- c('number','year','species','lenbin', 'prop', 'prey')
+observed$type2<-rep(("o"),each=22810)
+observed$sizefit<- paste0(observed$lenbin,".",observed$type2)
+
+
+pred_obs <- bind_rows(predicted, observed) %>% 
+  mutate(sizefit = paste0(lenbin,".",type2))
+
+
+##############
+### species = 1
+##############
+
+tiff("diet_plot_1.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
+
+
+
+
+
+
+
+tiff("diet_plot.jpeg", width=3000, height=2500, res=250) 
+ggplot(temp.diet[which(temp.diet$species == 1 & temp.diet$lenbin == 3),], 
+       aes(fill = as.factor(prey),y = pred_value, x = year))+
+  geom_bar(position = "fill", stat = "identity")+
+  labs(x="year", y="proportion", title="proportions of stomach weights, predator 1")+
+  theme(plot.title = element_text(hjust = 0.5))+
+  scale_fill_hue(labels = c("Prey 7", "Prey 13", "Prey 15", "Prey 17"))+
+  guides(fill = guide_legend(title = " ")) 
+dev.off()
+
 
 
 
