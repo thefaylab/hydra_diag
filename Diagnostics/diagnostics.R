@@ -1,8 +1,13 @@
+
+#  Diagnostic plots for Hydra 
+#  Last update 07/08/2022
+#  Maria Cristina Perez
+
 rm(list = ls())
 setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
 library(tidyverse)
 source("read.report.R")
-output<-reptoRlist("hydra_sim.rep")
+output<-reptoRlist("hydra_sim.rep")# read hydra rep file
 names(output)
 head(output)
 
@@ -12,7 +17,7 @@ head(output)
 #Ndietprop_obs 4721
 #catch_size_pred 1855
 
-######### READ OBSERVED AND ESTIMATED SURVEY VALUES ###################
+#### READ OBSERVED (.dat) AND ESTIMATED (.rep) SURVEY VALUES ####
 
 obs_survey<-read.table("hydra_sim_NOBA-ts.dat", skip=1695, nrows=1680, header=F)
 colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')
@@ -32,7 +37,7 @@ colnames(obs_survey) <- c('number','year','species','type','InpN','lenbin','obs_
                           'pred_value','nll','pearson')
 
 
-######### READ OBSERVED AND PREDICTED CATCH VALUES ###################
+#### READ OBSERVED (.dat) AND PREDICTED (.rep) CATCH VALUES ####
 
 obs_catch<-read.table("hydra_sim_NOBA-ts.dat", skip=4109, nrows=608, header=F)
 colnames(obs_catch) <- c('number','area','year','species','type','InpN','1','2','3','4','5')
@@ -54,7 +59,7 @@ colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin'
 
 diet_catch<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
 
-######### READ OBSERVED AND PREDICTED DIET PROPORTION VALUES ###################
+#### READ OBSERVED (.dat) AND PREDICTED (.rep) DIET PROPORTION VALUES ####
 
 obs_diet<-read.table("hydra_sim_NOBA-ts.dat", skip=4724, nrows=4721, header=F)
 #obs_diet$label<-rep(("diet"),each=4721)
@@ -73,18 +78,15 @@ colnames(obs_diet) <- c('number','year','species','lenbin','InpN','prey','obs_va
 
 
 mydata<-full_join(diet_catch, obs_diet, by = NULL,copy = FALSE)
-mydata$prey[is.na(mydata$prey)] <- -99
+mydata$prey[is.na(mydata$prey)] <- -99 # remove 99´s
 mydata$area[is.na(mydata$area)] <- 1
 mydata$type[is.na(mydata$type)] <- 0
 
-
+# save data frame with observed and predicted values
 #write.csv(mydata, file = "mydata.csv", row.names = T)
 
 
-#####################################
-############# PLOTS ##################
-#####################################
-
+#### PLOTS #### 
 
 rm(list = ls())
 setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
@@ -96,8 +98,6 @@ data<-as.data.frame(data)
 head(data)
 
 library(ggplot2)
-
-
 names(data)
 str(data)
 
@@ -107,10 +107,10 @@ temp.surv = data[which(data$label == "survey"),]
 temp.diet = data[which(data$label == "diet"),]
 
 
-#plot 1 length composition plots by species (catch)
-##############
+#### plot 1 length composition plots by species (catch) ####
+
 ### species = 1
-##############
+
 tiff("complot_catch_1.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
@@ -120,10 +120,7 @@ ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 2
-##############
 
 tiff("complot_catch_2.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 2),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -134,9 +131,7 @@ ggplot(temp.catch[which(temp.catch$species == 2),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-##############
 ### species = 3
-##############
 
 tiff("complot_catch_3.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 3),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -147,10 +142,7 @@ ggplot(temp.catch[which(temp.catch$species == 3),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 4
-##############
 
 tiff("complot_catch_4.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 4),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -161,10 +153,7 @@ ggplot(temp.catch[which(temp.catch$species == 4),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 6
-##############
 
 tiff("complot_catch_6.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 6),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -175,10 +164,7 @@ ggplot(temp.catch[which(temp.catch$species == 6),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 7
-##############
 
 tiff("complot_catch_7.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -189,10 +175,7 @@ ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 8
-##############
 
 tiff("complot_catch_8.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -203,10 +186,7 @@ ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_valu
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 10
-##############
 
 tiff("complot_catch_10.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 10),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -217,10 +197,7 @@ ggplot(temp.catch[which(temp.catch$species == 10),], aes(x = lenbin, y = obs_val
   annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 11
-##############
 
 tiff("complot_catch_11.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch[which(temp.catch$species == 11),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -232,11 +209,9 @@ ggplot(temp.catch[which(temp.catch$species == 11),], aes(x = lenbin, y = obs_val
 dev.off()
 
 
-#plot 1 length composition plots by species (survey)
+#### plot 1 length composition plots by species (survey) ####
 
-##############
 ### species = 1
-##############
 
 tiff("complot_survey_1.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -247,9 +222,7 @@ facet_wrap(.~year,dir="v") +
 annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-##############
 ### species = 2
-##############
 
 tiff("complot_survey_2.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 2 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -260,9 +233,7 @@ ggplot(temp.surv[which(temp.surv$species == 2 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-##############
 ### species = 3
-##############
 
 tiff("complot_survey_3.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 3 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -273,10 +244,7 @@ ggplot(temp.surv[which(temp.surv$species == 3 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 4
-##############
 
 tiff("complot_survey_4.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 4 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -287,10 +255,7 @@ ggplot(temp.surv[which(temp.surv$species == 4 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 5
-##############
 
 tiff("complot_survey_5.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 5 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -301,10 +266,7 @@ ggplot(temp.surv[which(temp.surv$species == 5 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 6
-##############
 
 tiff("complot_survey_6.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 6 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -315,10 +277,7 @@ ggplot(temp.surv[which(temp.surv$species == 6 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 7
-##############
 
 tiff("complot_survey_7.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 7 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -329,10 +288,7 @@ ggplot(temp.surv[which(temp.surv$species == 7 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 8
-##############
 
 tiff("complot_survey_8.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 8 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -343,10 +299,7 @@ ggplot(temp.surv[which(temp.surv$species == 8 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 9
-##############
 
 tiff("complot_survey_9.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 9 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -357,10 +310,7 @@ ggplot(temp.surv[which(temp.surv$species == 9 & temp.surv$number == 1),], aes(x 
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 10
-##############
 
 tiff("complot_survey_10.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 10 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -371,10 +321,7 @@ ggplot(temp.surv[which(temp.surv$species == 10 & temp.surv$number == 1),], aes(x
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-
-##############
 ### species = 11
-##############
 
 tiff("complot_survey_11.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 11 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
@@ -385,11 +332,9 @@ ggplot(temp.surv[which(temp.surv$species == 11 & temp.surv$number == 1),], aes(x
   annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
-# plot 2 length composition (catch) plots by species aggregated by year (catch)
+#### plot 2 length-comp plots by species aggregated by year (catch and survey) ####
 
-##############
 ### catch
-##############
 
 temporal2 = numeric()
 especie = numeric(); especie = sort(unique(temp.catch$species)) # especies 
@@ -446,9 +391,7 @@ ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
   facet_wrap(.~ESPECIE) 
 dev.off()
 
-##############
 ### survey
-##############
 
 temporal2 = numeric()
 especie = numeric(); especie = sort(unique(temp.surv$species)) # especies 
@@ -506,11 +449,9 @@ ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
 dev.off()
 
 
-#plot 3 pearson residuals bubble plot 
+#### plot 3 pearson residuals bubble plot #### 
 
-##############
-### catch data species = 1 to 11
-##############
+### catch, species= 1 to 11
 
 tiff("bubbleplot_catch.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.catch, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
@@ -518,9 +459,7 @@ ggplot(temp.catch, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))
   facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
 dev.off()
 
-##############
-### survey data species = 1 to 11
-##############
+### survey, species = 1 to 11
 
 tiff("bubbleplot_survey.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
@@ -529,8 +468,7 @@ ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual)))
 dev.off()
 
 
-#plot 4 proportions of stomach weights for each prey 
-#given a predator size class
+#### plot 4 proportions of stomach weights for each prey given a predator size class #### 
 
 predicted<- as.data.frame(cbind(temp.diet$number, temp.diet$year, temp.diet$species,
                                 temp.diet$lenbin, temp.diet$pred_value, temp.diet$prey))
@@ -544,14 +482,11 @@ colnames(observed) <- c('number','year','species','lenbin', 'prop', 'prey')
 observed$type2<-rep(("o"),each=22810)
 observed$sizefit<- paste0(observed$lenbin,".",observed$type2)
 
+pred_obs <- bind_rows(predicted, observed)# %>% 
+  #mutate(sizefit = paste0(lenbin,".",type2))
 
-pred_obs <- bind_rows(predicted, observed) %>% 
-  mutate(sizefit = paste0(lenbin,".",type2))
 
-
-##############
 ### species = 1
-##############
 
 tiff("diet_plot_1.jpeg", width=3000, height=2500, res=250) 
 pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>% 
@@ -582,8 +517,229 @@ pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>%
   scale_fill_brewer(type = "qual", palette = 2)
 dev.off()
 
+### species = 3
 
+tiff("diet_plot_3.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 3),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
 
+### species = 4
+
+tiff("diet_plot_4.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 4),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
+
+### species = 5
+
+tiff("diet_plot_5.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 5),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
+
+### species = 7
+
+tiff("diet_plot_7.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 7),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 3)
+dev.off()
+
+### species = 8
+
+tiff("diet_plot_8.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 8),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
+
+### species = 10
+
+setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics/figures")
+tiff("diet_plot_10.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 10),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
+
+### species = 11
+
+tiff("diet_plot_11.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 11),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~year) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+       fill = "prey",
+       y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+dev.off()
+
+# hacer una carpeta para cada figura
+# hacer un loop para cada figura/especie
+# agregar la leyenda n sample aun que sea manual
+
+# podria haber seleccionado de mi data frame los estimados 
 
 
 
