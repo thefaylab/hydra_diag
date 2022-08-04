@@ -1,9 +1,11 @@
 
 #  Diagnostic plots for Hydra 
-#  Last update 07/08/2022
+#  Last update 03/08/2022
 #  Maria Cristina Perez
 
 rm(list = ls())
+
+#change directory
 setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
 library(tidyverse)
 source("read.report.R")
@@ -18,6 +20,7 @@ head(output)
 #catch_size_pred 1855
 
 #### READ OBSERVED (.dat) AND ESTIMATED (.rep) SURVEY VALUES ####
+# careful with "skip" and "nrows" value!
 
 obs_survey<-read.table("hydra_sim_NOBA-ts.dat", skip=1695, nrows=1680, header=F)
 colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')
@@ -83,10 +86,12 @@ mydata$area[is.na(mydata$area)] <- 1
 mydata$type[is.na(mydata$type)] <- 0
 
 # save data frame with observed and predicted values
-#write.csv(mydata, file = "mydata.csv", row.names = T)
+# write.csv(mydata, file = "mydata.csv", row.names = T)
 
 
 #### PLOTS #### 
+# 2 options --> read the csv file saved in the previous steps
+#           --> or continue with mydata data frame 
 
 rm(list = ls())
 setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
@@ -116,8 +121,8 @@ ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v") #+
+  #annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 2
@@ -127,8 +132,8 @@ ggplot(temp.catch[which(temp.catch$species == 2),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 3
@@ -138,8 +143,8 @@ ggplot(temp.catch[which(temp.catch$species == 3),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 4
@@ -149,8 +154,8 @@ ggplot(temp.catch[which(temp.catch$species == 4),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 6
@@ -160,8 +165,8 @@ ggplot(temp.catch[which(temp.catch$species == 6),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 7
@@ -171,8 +176,8 @@ ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 8
@@ -182,8 +187,8 @@ ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_valu
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 10
@@ -193,8 +198,8 @@ ggplot(temp.catch[which(temp.catch$species == 10),], aes(x = lenbin, y = obs_val
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 11
@@ -204,8 +209,8 @@ ggplot(temp.catch[which(temp.catch$species == 11),], aes(x = lenbin, y = obs_val
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
   geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year, dir="v")# +
+ # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
 dev.off()
 
 
@@ -215,33 +220,33 @@ dev.off()
 
 tiff("complot_survey_1.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-facet_wrap(.~year,dir="v") +
-annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+ geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+ geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
+ geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
+ facet_wrap(.~year,dir="v")# +
+ # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 2
 
 tiff("complot_survey_2.jpeg", width=3000, height=2500, res=250) 
 ggplot(temp.surv[which(temp.surv$species == 2 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+ geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+ geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
+ geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
+ facet_wrap(.~year,dir="v")# +
+ # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 3
 
 tiff("complot_survey_3.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 3 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+ ggplot(temp.surv[which(temp.surv$species == 3 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
+ geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+ geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
+ geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
+ facet_wrap(.~year,dir="v")# +
+ # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 4
@@ -251,8 +256,8 @@ ggplot(temp.surv[which(temp.surv$species == 4 & temp.surv$number == 1),], aes(x 
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 5
@@ -262,8 +267,8 @@ ggplot(temp.surv[which(temp.surv$species == 5 & temp.surv$number == 1),], aes(x 
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 6
@@ -273,8 +278,8 @@ ggplot(temp.surv[which(temp.surv$species == 6 & temp.surv$number == 1),], aes(x 
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 7
@@ -284,8 +289,8 @@ ggplot(temp.surv[which(temp.surv$species == 7 & temp.surv$number == 1),], aes(x 
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 8
@@ -295,8 +300,8 @@ ggplot(temp.surv[which(temp.surv$species == 8 & temp.surv$number == 1),], aes(x 
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 9
@@ -306,8 +311,8 @@ ggplot(temp.surv[which(temp.surv$species == 9 & temp.surv$number == 1),], aes(x 
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 10
@@ -317,8 +322,8 @@ ggplot(temp.surv[which(temp.surv$species == 10 & temp.surv$number == 1),], aes(x
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 ### species = 11
@@ -328,8 +333,8 @@ ggplot(temp.surv[which(temp.surv$species == 11 & temp.surv$number == 1),], aes(x
   geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
   geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v") +
-  annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
+  facet_wrap(.~year,dir="v")# +
+  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
 dev.off()
 
 #### plot 2 length-comp plots by species aggregated by year (catch and survey) ####
@@ -385,7 +390,7 @@ ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
   geom_line() + 
   geom_point() + 
   geom_line(aes(x = BIN, y = PROP_NEW_EST), color = "green") +
-  annotate("text",  x = 4.3, y = 0.9, label = "n=", size=4) +
+  #  annotate("text",  x = 4.3, y = 0.9, label = "n=", size=4) +
   theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   labs(x="length bin", y="proportion value", title="Length composition aggregated by year catch data") +
   facet_wrap(.~ESPECIE) 
@@ -442,7 +447,7 @@ ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
   geom_line() + 
   geom_point() + 
   geom_line(aes(x = BIN, y = PROP_NEW_EST), color = "green") +
-  annotate("text",  x = 4.3, y = 0.9, label = "n=", size=4) +
+  # annotate("text",  x = 4.3, y = 0.9, label = "n=", size=4) +
   theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   labs(x="length bin", y="proportion value", title="Length composition aggregated by year survey data") +
   facet_wrap(.~ESPECIE) 
@@ -485,6 +490,7 @@ observed$sizefit<- paste0(observed$lenbin,".",observed$type2)
 pred_obs <- bind_rows(predicted, observed)# %>% 
   #mutate(sizefit = paste0(lenbin,".",type2))
 
+library(ggforce)
 
 ### species = 1
 
@@ -514,7 +520,8 @@ pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>%
   labs(x = "size & source (o=observed, e=expected)",
        fill = "prey",
        y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
+  scale_fill_brewer(type = "qual", palette = 2) 
+# facet_wrap_paginate(~ , ncol = 4, nrow = 5, page = 4) 
 dev.off()
 
 ### species = 3
@@ -735,46 +742,55 @@ pred_obs[which(pred_obs$number == 1 & pred_obs$species== 11),] %>%
   scale_fill_brewer(type = "qual", palette = 2)
 dev.off()
 
-# hacer una carpeta para cada figura
-# hacer un loop para cada figura/especie
-# agregar la leyenda n sample aun que sea manual
 
-# podria haber seleccionado de mi data frame los estimados 
+#### plot 5 sample size plots #### 
 
+### species = 1
 
-
-
-tiff("diet_plot.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.diet[which(temp.diet$species == 1 & temp.diet$lenbin == 3),], 
-       aes(fill = as.factor(prey),y = pred_value, x = year))+
-  geom_bar(position = "fill", stat = "identity")+
-  labs(x="year", y="proportion", title="proportions of stomach weights, predator 1")+
-  theme(plot.title = element_text(hjust = 0.5))+
-  scale_fill_hue(labels = c("Prey 7", "Prey 13", "Prey 15", "Prey 17"))+
-  guides(fill = guide_legend(title = " ")) 
+tiff("samplesize_plot_1.jpeg", width=3000, height=2500, res=250) 
+pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  
 dev.off()
 
+### species = 2
 
+
+
+#### END ####
+
+
+
+
+
+
+#### TO DO LIST #### 
+# make a folder for each type of plot 
+# make a loop for each plot/prey/predator
+# add legend, sample size (n=x) to each plot with independet values
 
 
 
 
 
 # trying to add each sample size per year ..... NOT WORKING
-#tapply(temp$InpN[which(temp$species == 1)], temp$year[which(temp$species == 1)], function(x) length(unique(x)))
-#N<-as.numeric(t(tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], unique)))
-#a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep=""), size=3)
+tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], function(x) length(unique(x)))
+N<-as.numeric(t(tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], unique)))
+a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep=""), size=3)
 
-#N<-as.numeric(t(tapply(temp$InpN[which(temp$species %in% c(1,2))], temp$year[which(temp$species == 1)], unique)))
-
-
+N<-as.numeric(t(tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], unique)))
 
 # adding some text 
-#data_text = data.frame(x = 20, y = 3.5, species = unique(temp$species), label = c("Text_1", "", "Text_3", "Text_", "", "Text", "Text_R", "", ""))
+data_text = data.frame(x = 20, y = 3.5, species = unique(temp.catch$species), label = c("605", "", "792", "","820", "", "820", "", "825", "", "830", "", "821", "", "822", "", "815", "", "826", "", "849", "", "823", "", "831", "", "818", "", "838", "", "835", "", "810", "", "838", "", "818", "", "831", "", "825", "", "804", "", "822", "", "846", "", "829", "", "824", "", "850", "", "816", "", "800", "", "821", "", "810", "", "812", "", "806", "", "825", "", "786", "", "811", "", "809", "", "815", "", "799", "", "816", "", "813", "", "807", "", "811", "", "816", "", "817", "", "794", "", "831", "", "787", "", "815", "", "808", "", "815", "", "789", "", "803", "", "809", "", "830", "", "804", "", "807", "", "820", "", "830", "", "825", "", "823", "", "818", "", "815", "", "804", "", "815", "", "836"))
 
-#ggplot(temp.catch, aes(x = year, y = lenbin)) + 
-# geom_point(aes(color = factor(resid), size = res_abs), alpha = 0.5) +
-#  scale_color_manual(values = c("blue", "lightblue")) +  theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-#  facet_wrap(.~species) + theme(legend.position = ' ') + labs(x="year", y="length bin", title="Pearson residuals (catch)")# +
-# geom_text(data = data_text, aes(x = x, y = y, label = label))
 
+ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
+  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
+  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
+  facet_wrap(.~year, dir="v") +
+  geom_text(data = data_text, aes(x = x, y = y, label = label))
+
+ 
