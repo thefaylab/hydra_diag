@@ -115,6 +115,45 @@ temp.diet = data[which(data$label == "diet"),]
 
 #### plot 1 length composition plots by species (catch) ####
 
+long_data <- temp.catch %>% 
+  pivot_longer(cols = c("pred_value","obs_value"),
+               names_to = c("kind","junk"),names_sep = "_") %>% 
+  select(-junk)
+
+#write.csv(long_data, file = "long_data.csv", row.names = T)
+
+
+sp<-1
+
+especies<-unique(long_data$species)
+for (sp in especies) {
+  
+  temp_size<-long_data%>% filter(species == sp) %>%
+    group_by(year) %>% 
+    summarize(mu_ss=mean(InpN))
+  
+  plot_catch<- long_data %>% filter (long_data$species==sp) %>%
+    ggplot() +
+    aes(x=lenbin, y = value, col = kind) +
+    geom_line() +
+    facet_wrap(~year, dir="v") +
+    #geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3) +# glue::glue("n={N}")), size=3)
+    theme(legend.position = "bottom") +
+    labs(col="") +
+    guides(col = guide_legend(nrow = 1))
+  
+  ggsave(paste0("complot_catch_",sp,".jpeg"), plot_catch, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250) 
+  
+} 
+
+
+
+
+
+
+
+
+#######
 sp<-1
 
 especies<-unique(temp.catch$species)
