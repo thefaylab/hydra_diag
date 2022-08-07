@@ -102,6 +102,7 @@ data$res_abs<-abs(data$pearson)
 data<-as.data.frame(data)
 head(data)
 
+library(tidyverse)
 library(ggplot2)
 names(data)
 str(data)
@@ -114,228 +115,49 @@ temp.diet = data[which(data$label == "diet"),]
 
 #### plot 1 length composition plots by species (catch) ####
 
-### species = 1
+sp<-1
 
-tiff("complot_catch_1.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") #+
-  #annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
+especies<-unique(temp.catch$species)
+  for (sp in especies) {
+  
+temp_size<-temp.catch%>% filter(species == sp) %>%
+  group_by(year) %>% 
+  summarize(mu_ss=mean(InpN))
 
-### species = 2
+plot_catch<-  temp.catch%>% filter(species == sp) %>%
+    ggplot(aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
+    geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+    geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
+    geom_line(aes(x = lenbin, y = pred_value), color = "green") +
+    facet_wrap(.~year, dir="v") +
+    geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3)# glue::glue("n={N}")), size=3)
 
-tiff("complot_catch_2.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 2),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
+ggsave(paste0("complot_catch_",sp,".jpeg"), plot_catch)#, width=3000, height=2500, res=250) 
 
-### species = 3
-
-tiff("complot_catch_3.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 3),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 4
-
-tiff("complot_catch_4.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 4),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 6
-
-tiff("complot_catch_6.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 6),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 7
-
-tiff("complot_catch_7.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 8
-
-tiff("complot_catch_8.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 7),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 10
-
-tiff("complot_catch_10.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 10),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 11
-
-tiff("complot_catch_11.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.catch[which(temp.catch$species == 11),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v")# +
- # annotate("text",  x = 4.5, y = 0.6, label = "n=", size=3)
-dev.off()
-
+} 
 
 #### plot 1 length composition plots by species (survey) ####
 
-### species = 1
+sp<-1
 
-tiff("complot_survey_1.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 1 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
- geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
- geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
- geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
- facet_wrap(.~year,dir="v")# +
- # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 2
-
-tiff("complot_survey_2.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 2 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
- geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
- geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
- geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
- facet_wrap(.~year,dir="v")# +
- # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 3
-
-tiff("complot_survey_3.jpeg", width=3000, height=2500, res=250) 
- ggplot(temp.surv[which(temp.surv$species == 3 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
- geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
- geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
- geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
- facet_wrap(.~year,dir="v")# +
- # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 4
-
-tiff("complot_survey_4.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 4 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 5
-
-tiff("complot_survey_5.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 5 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 6
-
-tiff("complot_survey_6.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 6 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 7
-
-tiff("complot_survey_7.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 7 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 8
-
-tiff("complot_survey_8.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 8 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 9
-
-tiff("complot_survey_9.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 9 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 10
-
-tiff("complot_survey_10.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 10 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
-
-### species = 11
-
-tiff("complot_survey_11.jpeg", width=3000, height=2500, res=250) 
-ggplot(temp.surv[which(temp.surv$species == 11 & temp.surv$number == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") + 
-  geom_line(aes(x = lenbin, y = pred_value), color = "blue") +
-  facet_wrap(.~year,dir="v")# +
-  # annotate("text",  x = 4.0, y = 0.6, label = "n=", size=3)
-dev.off()
+especies<-unique(temp.surv$species)
+for (sp in especies) {
+  
+  temp_size<-temp.surv %>% filter(species == sp & number==1) %>%
+    group_by(year) %>% 
+    summarize(mu_ss=mean(InpN))
+  
+  plot_surv<-  temp.surv%>% filter(species == sp & number==1) %>%
+    ggplot(aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
+    geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+    geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") +
+    geom_line(aes(x = lenbin, y = pred_value), color = "green") +
+    facet_wrap(.~year, dir="v") +
+    geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3)# glue::glue("n={N}")), size=3)
+  
+  ggsave(paste0("complot_surv_",sp,".jpeg"), plot_surv)#, width=3000, height=2500, res=250) 
+  
+} 
 
 #### plot 2 length-comp plots by species aggregated by year (catch and survey) ####
 
@@ -494,258 +316,74 @@ library(ggforce)
 
 ### species = 1
 
-tiff("diet_plot_1.jpeg", width=3000, height=2500, res=250) 
+sp<-1
+
+especies<-unique(pred_obs$species)
+for (sp in especies) {
+  
+  plot_diet<-  pred_obs%>% filter(species == sp & number==1) %>%
+    ggplot(aes(x = sizefit, y = prop, group = type2, fill = factor(prey))) +
+    geom_col(position = "fill") +
+    scale_x_discrete(limits = c("1.o","1.e","",
+                                "2.o","2.e","",
+                                "3.o","3.e","",
+                                "4.o","4.e","",
+                                "5.o","5.e",""),
+                     breaks = c("1.o","1.e",NA,
+                                "2.o","2.e",NA,
+                                "3.o","3.e",NA,
+                                "4.o","4.e",NA,
+                                "5.o","5.e",NA),
+                     labels = c("1.o","1.e","",
+                                "2.o","2.e","",
+                                "3.o","3.e","",
+                                "4.o","4.e","",
+                                "5.o","5.e","")) + 
+    coord_flip() +
+    facet_wrap(~year) +
+    theme_bw() +
+    labs(x = "size & source (o=observed, e=expected)",
+         fill = "prey",
+         y = "proportion in diet") +
+    scale_fill_brewer(type = "qual", palette = 3) 
+  # facet_wrap_paginate(~ , ncol = 4, nrow = 5, page = 4) 
+  
+  ggsave(paste0("diet_plot_",sp,".jpeg"), plot_diet)#, width=3000, height=2500, res=250) 
+  
+} 
+
+#### plot 5 survey sample size plots #### 
+
+names(temp.surv)
+temp.surv$InpN
+temp.surv$nll
+length(temp.surv$InpN)
+length(temp.surv$nll)
+
+plot(temp.surv$nll, temp.surv$InpN)
+
+
+tiff("samplesize_plot_1.jpeg", width=3000, height=2500, res=250) 
 pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>% 
   ggplot() +
   aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
   geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2) 
-# facet_wrap_paginate(~ , ncol = 4, nrow = 5, page = 4) 
-dev.off()
-
-### species = 3
-
-tiff("diet_plot_3.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 3),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
-dev.off()
-
-### species = 4
-
-tiff("diet_plot_4.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 4),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
-dev.off()
-
-### species = 5
-
-tiff("diet_plot_5.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 5),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
-dev.off()
-
-### species = 7
-
-tiff("diet_plot_7.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 7),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 3)
-dev.off()
-
-### species = 8
-
-tiff("diet_plot_8.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 8),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
-dev.off()
-
-### species = 10
-
-setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics/figures")
-tiff("diet_plot_10.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 10),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
-dev.off()
-
-### species = 11
-
-tiff("diet_plot_11.jpeg", width=3000, height=2500, res=250) 
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 11),] %>% 
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-  scale_x_discrete(limits = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e",""),
-                   breaks = c("1.o","1.e",NA,
-                              "2.o","2.e",NA,
-                              "3.o","3.e",NA,
-                              "4.o","4.e",NA,
-                              "5.o","5.e",NA),
-                   labels = c("1.o","1.e","",
-                              "2.o","2.e","",
-                              "3.o","3.e","",
-                              "4.o","4.e","",
-                              "5.o","5.e","")) + 
-  coord_flip() +
-  facet_wrap(~year) +
-  theme_bw() +
-  labs(x = "size & source (o=observed, e=expected)",
-       fill = "prey",
-       y = "proportion in diet") +
-  scale_fill_brewer(type = "qual", palette = 2)
-dev.off()
+  
+  dev.off()
 
 
-#### plot 5 sample size plots #### 
 
-### species = 1
+#### plot 5 catch sample size plots #### 
+
+
+names(temp.catch)
+temp.catch$InpN
+temp.catch$nll
+length(temp.catch$InpN)
+length(temp.catch$nll)
+
+plot(temp.catch$nll, temp.catch$InpN)
+
 
 tiff("samplesize_plot_1.jpeg", width=3000, height=2500, res=250) 
 pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>% 
@@ -755,7 +393,6 @@ pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>%
   
 dev.off()
 
-### species = 2
 
 
 
