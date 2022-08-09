@@ -132,10 +132,10 @@ for (sp in especies) {
     group_by(year) %>%
     summarize(mu_ss=mean(InpN))
 
-  plot_catch<- long_data %>% filter (long_data$species==sp) %>%
+  plot_catch<- long_data %>% filter (species==sp) %>%
     ggplot() +
-    #aes(x=lenbin, y = value, col = kind) +
-    geom_line(aes(x=lenbin, y = value, col = kind)) +
+    aes(x=lenbin, y = value) + #, col = kind) +
+    geom_line(aes(col = kind)) +
     facet_wrap(~year, dir="v") +
     geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3) +# glue::glue("n={N}")), size=3)
     theme(legend.position = "bottom") +
