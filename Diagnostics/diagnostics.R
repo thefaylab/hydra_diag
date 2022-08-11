@@ -393,13 +393,33 @@ for (sp in especies) {
 
 #### plot 5 survey sample size plots #### 
 
-names(temp.surv)
-temp.surv$InpN
-temp.surv$nll
-length(temp.surv$InpN)
-length(temp.surv$nll)
+predicted_survey<-read.table("hydra_sim.rep", skip=17618, nrows=1680, header=F)
+colnames(predicted_survey) <- c('number','year','species','data','cv','predicted','residual','nll')
+observed_survey<-obs_survey$InpN
 
-plot(temp.surv$nll, temp.surv$InpN)
+predicted_survey$numero<-obs_survey$InpN
+
+
+write.csv(predicted_survey, file = "survey.csv", row.names = T)
+
+
+sp<-1
+
+especies<-unique(predicted_survey$species)
+for (sp in especies) {
+  
+  plot_size<- predicted_survey %>% filter (predicted_survey$number==1) %>%
+    ggplot() +
+    aes(x=nll, y = numero) +
+    geom_point() +
+    facet_wrap(~species) 
+    
+  ggsave(paste0("size_catch_",sp,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250) 
+  
+} 
+
+
+
 
 
 tiff("samplesize_plot_1.jpeg", width=3000, height=2500, res=250) 
