@@ -93,9 +93,9 @@ mydata$type[is.na(mydata$type)] <- 0
 # 2 options --> read the csv file saved in the previous steps
 #           --> or continue with mydata data frame
 
-rm(list = ls())
+#rm(list = ls())
 setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
-data<-read.csv("Diagnostics/mydata.csv", header = T)
+data<-read.csv("mydata.csv", header = T)
 #data<- select(data, -X)
 data$residual<-ifelse(data$pearson<0,"negative","positive")
 data$res_abs<-abs(data$pearson)
@@ -115,86 +115,61 @@ temp.diet = data[which(data$label == "diet"),]
 
 #### plot 1 length composition plots by species (catch) ####
 
-long_data <- temp.catch %>%
+long_catch <- temp.catch %>%
   pivot_longer(cols = c("pred_value","obs_value"),
                names_to = c("kind","junk"),names_sep = "_") %>%
   select(-junk)
 
-#write.csv(long_data, file = "long_data.csv", row.names = T)
-
-
 sp<-1
 
-especies<-unique(long_data$species)
+especies<-unique(long_catch$species)
 for (sp in especies) {
-
-  temp_size<-long_data%>% filter(species == sp) %>%
+  
+  temp_size<-long_catch%>% filter(species == sp) %>%
     group_by(year) %>%
     summarize(mu_ss=mean(InpN))
-
-  plot_catch<- long_data %>% filter (species==sp) %>%
+  
+  plot_catch<- long_catch %>% filter (species==sp) %>%
     ggplot() +
-    aes(x=lenbin, y = value) + #, col = kind) +
+    aes(x=lenbin, y = value) + 
     geom_line(aes(col = kind)) +
     facet_wrap(~year, dir="v") +
-    geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3) +# glue::glue("n={N}")), size=3)
+    geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3) +
     theme(legend.position = "bottom") +
     labs(col="") +
     guides(col = guide_legend(nrow = 1))
-
-  ggsave(paste0("complot_catch_",sp,".jpeg"), plot_catch, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
-
-}
-
-
-
-
-
-
-
-
-#######
-sp<-1
-
-especies<-unique(temp.catch$species)
-  for (sp in especies) {
-
-temp_size<-temp.catch%>% filter(species == sp) %>%
-  group_by(year) %>%
-  summarize(mu_ss=mean(InpN))
-
-plot_catch<-  temp.catch%>% filter(species == sp) %>%
-    ggplot(aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-    geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-    geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-    geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-    facet_wrap(.~year, dir="v") +
-    geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3)# glue::glue("n={N}")), size=3)
-
-ggsave(paste0("complot_catch_",sp,".jpeg"), plot_catch)#, width=3000, height=2500, res=250)
-
+  
+    ggsave(paste0("complot_catch_",sp,".jpeg"), plot_catch, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+  
 }
 
 #### plot 1 length composition plots by species (survey) ####
 
+long_surv <- temp.surv %>%
+  pivot_longer(cols = c("pred_value","obs_value"),
+               names_to = c("kind","junk"),names_sep = "_") %>%
+  select(-junk)
+
 sp<-1
 
-especies<-unique(temp.surv$species)
+especies<-unique(long_surv$species)
 for (sp in especies) {
 
-  temp_size<-temp.surv %>% filter(species == sp & number==1) %>%
+  temp_size<-long_surv %>% filter(species == sp & number==1) %>%
     group_by(year) %>%
     summarize(mu_ss=mean(InpN))
 
-  plot_surv<-  temp.surv%>% filter(species == sp & number==1) %>%
-    ggplot(aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-    geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-    geom_point() + labs(x="length bin", y="proportion value", title="Survey length comp by year") +
-    geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-    facet_wrap(.~year, dir="v") +
-    geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3)# glue::glue("n={N}")), size=3)
-
-  ggsave(paste0("complot_surv_",sp,".jpeg"), plot_surv)#, width=3000, height=2500, res=250)
+  plot_surv<- long_surv %>% filter (species==sp& number==1) %>%
+    ggplot() +
+    aes(x=lenbin, y = value) + 
+    geom_line(aes(col = kind)) +
+    facet_wrap(~year, dir="v") +
+    geom_text(data=temp_size, aes(x = 4.5, y = 0.5, label = mu_ss), size=3) +
+    theme(legend.position = "bottom") +
+    labs(col="") +
+    guides(col = guide_legend(nrow = 1))
+  
+  ggsave(paste0("complot_surv_",sp,".jpeg"), plot_surv, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
 
 }
 
@@ -241,21 +216,30 @@ for(e in 1:length(especie)){
   prop_new_est = numeric(); prop_new_est = c(bin1_pred, bin2_pred, bin3_pred, bin4_pred, bin5_pred) / total_pred
 
   tt2 = numeric()
-  tt2 = data.frame(ESPECIE = especie[e], BIN = seq(1, 5, 1), PROP_NEW_OBS = prop_new_obs, PROP_NEW_EST = prop_new_est)
+  tt2 = data.frame(ESPECIE = especie[e], BIN = seq(1, 5, 1), PROP_OBS = prop_new_obs, PROP_EST = prop_new_est)
 
   temporal2 = rbind(temporal2, tt2) # almacena por cada especie
 }
 
-tiff("complot_year_catch.jpeg", width=3000, height=2500, res=250)
-ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
-  geom_line() +
-  geom_point() +
-  geom_line(aes(x = BIN, y = PROP_NEW_EST), color = "green") +
-  #  annotate("text",  x = 4.3, y = 0.9, label = "n=", size=4) +
+
+long_temp2 <- temporal2 %>%
+  pivot_longer(cols = c("PROP_OBS","PROP_EST"),
+               names_to = c("kind","junk"),names_sep = " ") %>%
+  select(-junk)
+
+complot_year<- long_temp2 %>%
+  ggplot() +
+  aes(x = BIN, y = value) +
+  geom_line(aes(col=kind)) +
   theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   labs(x="length bin", y="proportion value", title="Length composition aggregated by year catch data") +
-  facet_wrap(.~ESPECIE)
-dev.off()
+  facet_wrap(.~ESPECIE) +
+  theme(legend.position = "bottom") +
+  labs(col="") +
+  guides(col = guide_legend(nrow = 1))
+
+ggsave(("complot_year_catch.jpeg"), complot_year)#, width=3000, height=2500, res=250)
+
 
 ### survey
 
@@ -298,21 +282,28 @@ for(e in 1:length(especie)){
   prop_new_est = numeric(); prop_new_est = c(bin1_pred, bin2_pred, bin3_pred, bin4_pred, bin5_pred) / total_pred
 
   tt2 = numeric()
-  tt2 = data.frame(ESPECIE = especie[e], BIN = seq(1, 5, 1), PROP_NEW_OBS = prop_new_obs, PROP_NEW_EST = prop_new_est)
+  tt2 = data.frame(ESPECIE = especie[e], BIN = seq(1, 5, 1), PROP_OBS = prop_new_obs, PROP_EST = prop_new_est)
 
   temporal2 = rbind(temporal2, tt2) # almacena por cada especie
 }
 
-tiff("complot_year_survey.jpeg", width=3000, height=2500, res=250)
-ggplot(temporal2, aes(x = BIN, y = PROP_NEW_OBS)) +
-  geom_line() +
-  geom_point() +
-  geom_line(aes(x = BIN, y = PROP_NEW_EST), color = "green") +
-  # annotate("text",  x = 4.3, y = 0.9, label = "n=", size=4) +
+long_temp2 <- temporal2 %>%
+  pivot_longer(cols = c("PROP_OBS","PROP_EST"),
+               names_to = c("kind","junk"),names_sep = " ") %>%
+  select(-junk)
+
+complot_year<- long_temp2 %>%
+  ggplot() +
+  aes(x = BIN, y = value) +
+  geom_line(aes(col=kind)) +
   theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   labs(x="length bin", y="proportion value", title="Length composition aggregated by year survey data") +
-  facet_wrap(.~ESPECIE)
-dev.off()
+  facet_wrap(.~ESPECIE) +
+  theme(legend.position = "bottom") +
+  labs(col="") +
+  guides(col = guide_legend(nrow = 1))
+
+ggsave(("complot_year_survey.jpeg"), complot_year)#, width=3000, height=2500, res=250)
 
 
 #### plot 3 pearson residuals bubble plot ####
@@ -387,20 +378,21 @@ for (sp in especies) {
     scale_fill_brewer(type = "qual", palette = 3)
   # facet_wrap_paginate(~ , ncol = 4, nrow = 5, page = 4)
 
-  ggsave(paste0("diet_plot_",sp,".jpeg"), plot_diet)#, width=3000, height=2500, res=250)
+  ggsave(paste0("diet_plot_",sp,".jpeg"), plot_diet, width = 10, height = 9, dpi = 300)#, width=3000, height=2500, res=250)
 
 }
 
 #### plot 5 survey sample size plots ####
 
+obs_survey<-read.table("hydra_sim_NOBA-ts.dat", skip=1695, nrows=1680, header=F)
+colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')
+
 predicted_survey<-read.table("hydra_sim.rep", skip=17618, nrows=1680, header=F)
 colnames(predicted_survey) <- c('number','year','species','data','cv','predicted','residual','nll')
-observed_survey<-obs_survey$InpN
+head(predicted_survey)
 
-predicted_survey$numero<-obs_survey$InpN
-
-
-write.csv(predicted_survey, file = "survey.csv", row.names = T)
+predicted_survey$InpN<-obs_survey$InpN
+names(predicted_survey)
 
 
 sp<-1
@@ -410,82 +402,47 @@ for (sp in especies) {
   
   plot_size<- predicted_survey %>% filter (predicted_survey$number==1) %>%
     ggplot() +
-    aes(x=nll, y = numero) +
+    aes(x=nll, y = InpN) +
     geom_point() +
     facet_wrap(~species) 
     
-  ggsave(paste0("size_catch_",sp,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250) 
+  ggsave(paste0("samplesize_survey_",sp,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250) 
   
 } 
 
 
-
-
-
-tiff("samplesize_plot_1.jpeg", width=3000, height=2500, res=250)
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>%
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-
-  dev.off()
-
-
-
 #### plot 5 catch sample size plots ####
+### still working on this
+
+obs_catch<-read.table("hydra_sim_NOBA-ts.dat", skip=4109, nrows=608, header=F)
+colnames(obs_catch) <- c('number','area','year','species','type','InpN','1','2','3','4','5')
+
+predicted_catch<-read.table("hydra_sim.rep", skip=17618, nrows=1680, header=F)
+colnames(predicted_survey) <- c('number','year','species','data','cv','predicted','residual','nll')
+head(predicted_survey)
+
+predicted_survey$InpN<-obs_survey$InpN
+names(predicted_survey)
 
 
-names(temp.catch)
-temp.catch$InpN
-temp.catch$nll
-length(temp.catch$InpN)
-length(temp.catch$nll)
+sp<-1
 
-plot(temp.catch$nll, temp.catch$InpN)
-
-
-tiff("samplesize_plot_1.jpeg", width=3000, height=2500, res=250)
-pred_obs[which(pred_obs$number == 1 & pred_obs$species== 1),] %>%
-  ggplot() +
-  aes(x = sizefit, y = prop, group = type2, fill = factor(prey)) +
-  geom_col(position = "fill") +
-
-dev.off()
-
+especies<-unique(predicted_survey$species)
+for (sp in especies) {
+  
+  plot_size<- predicted_survey %>% filter (predicted_survey$number==1) %>%
+    ggplot() +
+    aes(x=nll, y = InpN) +
+    geom_point() +
+    facet_wrap(~species) 
+  
+  ggsave(paste0("samplesize_survey_",sp,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250) 
+  
+} 
 
 
 
 #### END ####
 
 
-
-
-
-
-#### TO DO LIST ####
-# make a folder for each type of plot
-# make a loop for each plot/prey/predator
-# add legend, sample size (n=x) to each plot with independet values
-
-
-
-
-
-# trying to add each sample size per year ..... NOT WORKING
-tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], function(x) length(unique(x)))
-N<-as.numeric(t(tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], unique)))
-a<- a + annotate("text",  x = 4.0, y = 0.6, label = paste("Sample size:", N, sep=""), size=3)
-
-N<-as.numeric(t(tapply(temp.catch$InpN[which(temp.catch$species == 1)], temp.catch$year[which(temp.catch$species == 1)], unique)))
-
-# adding some text
-data_text = data.frame(x = 20, y = 3.5, species = unique(temp.catch$species), label = c("605", "", "792", "","820", "", "820", "", "825", "", "830", "", "821", "", "822", "", "815", "", "826", "", "849", "", "823", "", "831", "", "818", "", "838", "", "835", "", "810", "", "838", "", "818", "", "831", "", "825", "", "804", "", "822", "", "846", "", "829", "", "824", "", "850", "", "816", "", "800", "", "821", "", "810", "", "812", "", "806", "", "825", "", "786", "", "811", "", "809", "", "815", "", "799", "", "816", "", "813", "", "807", "", "811", "", "816", "", "817", "", "794", "", "831", "", "787", "", "815", "", "808", "", "815", "", "789", "", "803", "", "809", "", "830", "", "804", "", "807", "", "820", "", "830", "", "825", "", "823", "", "818", "", "815", "", "804", "", "815", "", "836"))
-
-
-ggplot(temp.catch[which(temp.catch$species == 1),], aes(x = lenbin, y = obs_value), ylim=c(0,0.8)) +
-  geom_line() + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  geom_point() + labs(x="length bin", y="proportion value", title="Catch length comp by year") +
-  geom_line(aes(x = lenbin, y = pred_value), color = "green") +
-  facet_wrap(.~year, dir="v") +
-  geom_text(data = data_text, aes(x = x, y = y, label = label))
 
