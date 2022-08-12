@@ -1,3 +1,6 @@
+# ignores output plots
+outputs/figures/
+
 # History files
 .Rhistory
 .Rapp.history
