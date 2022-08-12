@@ -5,7 +5,7 @@
 
 #rm(list = ls())  #Restart R session instead to properly clean your workspace
 
-#change directory
+#change directory  - use Project  (hydra_diag.Rproj) to set working directory rather than hard-coding
 #setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
 library(tidyverse)
 library(ggforce)
