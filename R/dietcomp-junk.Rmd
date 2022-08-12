@@ -1,0 +1,64 @@
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+Nprey <- 8
+Nsize <- 5
+Nyr <- 10
+data <- tibble(expand.grid(prey = 1:Nprey, size = 1:Nsize, yr=1:Nyr)) %>% 
+  mutate(pred = rep(1,nrow(.))) %>% 
+  select(pred, yr, size, prey) %>% 
+  mutate(val = runif(nrow(.))) %>% 
+  group_by(pred, size, yr) %>% 
+  mutate(prop = val/sum(val, na.rm=TRUE)) %>% 
+  ungroup() %>% 
+  I()
+data$type <- "e"
+data2 <- tibble(expand.grid(prey = 1:Nprey, size = 1:Nsize, yr=1:Nyr)) %>% 
+  mutate(pred = rep(1,nrow(.))) %>% 
+  select(pred, yr, size, prey) %>% 
+  mutate(val = runif(nrow(.))) %>% 
+  group_by(pred, size, yr) %>% 
+  mutate(prop = val/sum(val, na.rm=TRUE)) %>% 
+  ungroup() %>% 
+  I()
+data2$type <- "o"
+data <- bind_rows(data, data2) %>% 
+  mutate(sizefit = paste0(size,".",type))
+```
+
+```{r}
+data %>% 
+  #left_join(lookup) %>% 
+  ggplot() +
+  aes(x = sizefit, y = prop, group = type, fill = factor(prey)) +
+  geom_col(position = "fill") +
+  scale_x_discrete(limits = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e",""),
+                   breaks = c("1.o","1.e",NA,
+                              "2.o","2.e",NA,
+                              "3.o","3.e",NA,
+                              "4.o","4.e",NA,
+                              "5.o","5.e",NA),
+                   labels = c("1.o","1.e","",
+                              "2.o","2.e","",
+                              "3.o","3.e","",
+                              "4.o","4.e","",
+                              "5.o","5.e","")) + 
+  coord_flip() +
+  facet_wrap(~yr) +
+  theme_bw() +
+  labs(x = "size & source (o=observed, e=expected)",
+         fill = "prey",
+         y = "proportion in diet") +
+  scale_fill_brewer(type = "qual", palette = 2)
+  NULL
+```
+
+
