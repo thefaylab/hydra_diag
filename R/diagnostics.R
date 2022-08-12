@@ -1,6 +1,6 @@
 
 #  Diagnostic plots for Hydra
-#  Last update 03/08/2022
+#  Last update 2022-08-12
 #  Maria Cristina Perez
 
 #rm(list = ls())  #Restart R session instead to properly clean your workspace
@@ -14,7 +14,10 @@ library(ggforce)
 source("R/read.report.R")
 
 # input & output files to use (these should be arguments in the function that calls this script)
+#hydra report file
 repfile <- "test-data/hydra_sim.rep"
+#repfile <- "../hydra_sim/hydra_sim.rep"
+#time series data file
 tsfile <- "test-data/hydra_sim_NOBA-ts.dat"
 
 
