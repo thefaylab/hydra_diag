@@ -20,6 +20,9 @@ repfile <- "test-data/hydra_sim.rep"
 #time series data file
 tsfile <- "test-data/hydra_sim_NOBA-ts.dat"
 
+#datafile object
+load("test-data/hydraDataList.rda")
+names(hydraDataList)
 
 # read in output files
 # todo - add output directory as an argument to the function that calls this script
@@ -38,12 +41,16 @@ output<-reptoRlist(repfile)# read hydra rep file
 #### READ OBSERVED (.dat) AND ESTIMATED (.rep) SURVEY VALUES ####
 # careful with "skip" and "nrows" value!
 # todo - add input data file / directory as an argument to the function that calls this script
-obs_survey<-read.table(tsfile, skip=1695, nrows=1680, header=F)
-colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')  #todo - modify so number of bins is based on size of dataframe
-obs_survey<-obs_survey %>% pivot_longer(cols=6:10, names_to = "lenbin") %>%
+#obs_survey<-read.table(tsfile, skip=1695, nrows=1680, header=F)
+obs_survey <- hydraDataList$observedSurvSize %>% tibble()
+
+#colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')  #todo - modify so number of bins is based on size of dataframe
+obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>%
   filter(value != -999)%>%
-  mutate(lenbin = as.integer(str_remove(lenbin, "V")))
-obs_survey$label<-rep(("survey"),each=7189)
+  mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
+         label = rep("survey",nrow(.)),
+         species = hydraDataList$speciesList[species])
+#obs_survey$label<-rep(("survey"),each=7189)
 #dim(obs_survey) #7189
 
 pred_surv<-output$pred_survey_size
@@ -58,12 +65,15 @@ colnames(obs_survey) <- c('number','year','species','type','InpN','lenbin','obs_
 
 #### READ OBSERVED (.dat) AND PREDICTED (.rep) CATCH VALUES ####
 
-obs_catch<-read.table(tsfile, skip=4109, nrows=608, header=F)
-colnames(obs_catch) <- c('number','area','year','species','type','InpN','1','2','3','4','5')
-obs_catch<-obs_catch %>% pivot_longer(cols=7:11, names_to = "lenbin") %>%
-  mutate(lenbin = as.integer(str_remove(lenbin, "V"))) %>%
+#obs_catch<-read.table(tsfile, skip=4109, nrows=608, header=F)
+obs_catch <- hydraDataList$observedCatchSize %>% tibble()
+#colnames(obs_catch) <- c('number','area','year','species','type','InpN','1','2','3','4','5')
+obs_catch<-obs_catch %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
+  mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
+         label = rep("catch",nrow(.)),
+         species = hydraDataList$speciesList[species]) %>%
   filter(value != -999)
-obs_catch$label<-rep(("catch"),each=1855)
+#obs_catch$label<-rep(("catch"),each=1855)
 #dim(obs_catch) #1855
 
 pred_catch<-output$pred_catch_size
@@ -81,12 +91,16 @@ diet_catch <- bind_rows(obs_catch, obs_survey)
 
 #### READ OBSERVED (.dat) AND PREDICTED (.rep) DIET PROPORTION VALUES ####
 # todo as above, make the data file an argument and have the dimensions be determined from the file rather than hard-coded
-obs_diet<-read.table(tsfile, skip=4724, nrows=4721, header=F)
+#obs_diet<-read.table(tsfile, skip=4724, nrows=4721, header=F)
+obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
+
 #obs_diet$label<-rep(("diet"),each=4721)
-obs_diet<-obs_diet %>% pivot_longer(cols=6:17, names_to = "lenbin") %>%
-  mutate(lenbin = as.integer(str_remove(lenbin, "V"))) %>%
+obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
+  mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
+         species = hydraDataList$speciesList[species],
+         label = rep("diet",nrow(.))) %>%
   filter(value >0 )
-obs_diet$label<-rep(("diet"),each=22810)
+#obs_diet$label<-rep(("diet"),each=22810)
 #dim(obs_diet) #22810
 
 pred_diet<-output$pred_dietprop
@@ -98,35 +112,44 @@ colnames(obs_diet) <- c('number','year','species','lenbin','InpN','prey','obs_va
 
 
 #mydata<-full_join(diet_catch, obs_diet, by = NULL,copy = FALSE)
-mydata <- bind_rows(diet_catch, obs_diet)
-
-
-mydata$prey[is.na(mydata$prey)] <- -99 # remove 99?s
-mydata$area[is.na(mydata$area)] <- 1
-mydata$type[is.na(mydata$type)] <- 0
+#mydata <- bind_rows(diet_catch, obs_diet)
+mydata <- diet_catch %>%
+  mutate(#prey = replace_na(prey, -99),
+         area = replace_na(area, 1),
+         type = replace_na(type, 0))
+# mydata$prey[is.na(mydata$prey)] <- -99 # remove 99?s
+# mydata$area[is.na(mydata$area)] <- 1
+# mydata$type[is.na(mydata$type)] <- 0
 
 # save data frame with observed and predicted values
-write.csv(mydata, file = "outputs/mydata.csv", row.names = T)
-
+write.csv(mydata, file = "outputs/sizecomps.csv", row.names = T)
+write.csv(obs_diet, file = "outputs/survdiet.csv", row.names = T)
 
 #### PLOTS ####
 # 2 options --> read the csv file saved in the previous steps
 #           --> or continue with mydata data frame
+# data now read to sizecomps.csv and survdiet.csv
 
 #setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
-data <- read.csv("outputs/mydata.csv", header = T)
+data <- read.csv("outputs/sizecomps.csv", header = T)
 #data<- select(data, -X)
 data$residual<-ifelse(data$pearson<0,"negative","positive")
 data$res_abs<-abs(data$pearson)
 data<-as.data.frame(data)
 #head(data)
 
-names(data)
-str(data)
+#names(data)
+#str(data)
 
 #select type of data "label= catch, survey or diet"
 temp.catch = data[which(data$label == "catch"),]
 temp.surv = data[which(data$label == "survey"),]
+#temp.diet = data[which(data$label == "diet"),]
+
+data <- read.csv("outputs/survdiet.csv", header = T)
+#data<- select(data, -X)
+data$residual<-ifelse(data$pearson<0,"negative","positive")
+data$res_abs<-abs(data$pearson)
 temp.diet = data[which(data$label == "diet"),]
 
 
@@ -352,13 +375,13 @@ plotdir <- "outputs/figures/diet/"
 predicted<- as.data.frame(cbind(temp.diet$number, temp.diet$year, temp.diet$species,
                                 temp.diet$lenbin, temp.diet$pred_value, temp.diet$prey))
 colnames(predicted) <- c('number','year','species','lenbin', 'prop', 'prey')
-predicted$type2<-rep(("e"),each=22810)
+predicted$type2<-"e" #rep(("e"),each=22810)
 predicted$sizefit<- paste0(predicted$lenbin,".",predicted$type2)
 
 observed<- as.data.frame(cbind(temp.diet$number, temp.diet$year, temp.diet$species,
                                temp.diet$lenbin, temp.diet$obs_value, temp.diet$prey))
 colnames(observed) <- c('number','year','species','lenbin', 'prop', 'prey')
-observed$type2<-rep(("o"),each=22810)
+observed$type2<-"o" #rep(("o"),each=22810)
 observed$sizefit<- paste0(observed$lenbin,".",observed$type2)
 
 pred_obs <- bind_rows(predicted, observed)# %>%
@@ -368,6 +391,19 @@ pred_obs <- bind_rows(predicted, observed)# %>%
 ### species = 1
 
 sp<-1
+nsize <- hydraDataList$Nsizebins
+stringbit <- paste0(rep(1:nsize, each=2),c(".o",".e"))
+limits_use <- rep("",3*nsize)
+breaks_use <- rep(NA,3*nsize)
+for (i in 1:nsize) {
+  lo <- i*3-2
+  hi <- i*3-1
+  limits_use[lo:hi] <- paste0(rep(i, 2),c(".o",".e"))
+  breaks_use[lo:hi] <- limits_use[lo:hi]
+}
+
+ paste0(rep(1:nsize, each=2),c(".o",".e"))
+
 
 especies<-unique(pred_obs$species)
 for (sp in especies) {
@@ -375,21 +411,22 @@ for (sp in especies) {
   plot_diet<-  pred_obs%>% filter(species == sp & number==1) %>%
     ggplot(aes(x = sizefit, y = prop, group = type2, fill = factor(prey))) +
     geom_col(position = "fill") +
-    scale_x_discrete(limits = c("1.o","1.e","",
-                                "2.o","2.e","",
-                                "3.o","3.e","",
-                                "4.o","4.e","",
-                                "5.o","5.e",""),
-                     breaks = c("1.o","1.e",NA,
-                                "2.o","2.e",NA,
-                                "3.o","3.e",NA,
-                                "4.o","4.e",NA,
-                                "5.o","5.e",NA),
-                     labels = c("1.o","1.e","",
-                                "2.o","2.e","",
-                                "3.o","3.e","",
-                                "4.o","4.e","",
-                                "5.o","5.e","")) +
+    scale_x_discrete(limits = limits_use,
+                     # c("1.o","1.e","",
+                     #            "2.o","2.e","",
+                     #            "3.o","3.e","",
+                     #            "4.o","4.e","",
+                     #            "5.o","5.e",""),
+                     breaks = breaks_use, #c("1.o","1.e",NA,
+                                # "2.o","2.e",NA,
+                                # "3.o","3.e",NA,
+                                # "4.o","4.e",NA,
+                                # "5.o","5.e",NA),
+                     labels = limits_use) + #c("1.o","1.e","",
+                                # "2.o","2.e","",
+                                # "3.o","3.e","",
+                                # "4.o","4.e","",
+                                # "5.o","5.e","")) +
     coord_flip() +
     facet_wrap(~year) +
     theme_bw() +
