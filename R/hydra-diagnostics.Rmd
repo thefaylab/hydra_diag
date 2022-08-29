@@ -513,8 +513,11 @@ especies<-unique(pred_obs$species)
 plot_diet <- NULL
 for (sp in especies) {
 
-  plot_diet[[sp]] <-  pred_obs%>% filter(species == sp & number==1) %>%
-    ggplot(aes(x = sizefit, y = prop, group = type2, fill = factor(prey))) +
+  plot_diet[[sp]] <-  pred_obs %>%
+    tibble() %>% 
+    filter(species == sp & number == 1) %>%
+    mutate(prop = as.numeric(prop)) %>% 
+    ggplot(aes(x = sizefit, y = prop, group = type2, fill = prey)) +
     geom_col(position = "fill") +
     scale_x_discrete(limits = limits_use,
                      # c("1.o","1.e","",
