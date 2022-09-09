@@ -9,7 +9,7 @@ output:
 ```{r}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
                       knitr.duplicate.label = "allow")
-library(tidyverse)
+suppressPackageStartupMessages(library(tidyverse))
 library(ggforce)
 source("../R/read.report.R")
 
@@ -38,11 +38,11 @@ survey_obs <- hydraDataList$observedBiomass %>%
 ```
 
 #### survey indices of abundance {.tabset}
-```{r}
-for (survey in unique(survey_obs$survey)) {
-  cat("##### Survey #", survey, " \n")
+```{r, results = 'asis'}
+for (surv in unique(survey_obs$survey)) {
+  cat("##### Survey #", surv, " \n")
   p1 <- survey_obs %>% 
-  filter(survey == survey) %>% 
+  filter(survey == surv) %>% 
   ggplot() +
   aes(x= year, y = log_obs, group = species, col=factor(survey)) +
   geom_errorbar(aes(ymin = log_lo, ymax = log_hi)) +
@@ -55,6 +55,7 @@ for (survey in unique(survey_obs$survey)) {
   cat(" \n\n")
   }
 ```
+
 #### {-}
 
 ```{r}
@@ -69,8 +70,9 @@ catch_obs <- hydraDataList$observedCatch %>%
          species = hydraDataList$speciesList[species])
 ```
 
-#### Catch time series {.tabset}
-```{r}
+#### Catch time series {.tabset} 
+
+```{r, results = 'asis'}
 for (fleet in unique(catch_obs$fishery)) {
   cat("##### Fleet #", fleet, " \n")
 p3 <- catch_obs %>% 
@@ -88,6 +90,8 @@ p3 <- catch_obs %>%
   cat(" \n\n")
 }
 ```
+
+#### {-}
 
 #### Size composition data
 
@@ -208,10 +212,13 @@ temp.diet = data[which(data$label == "diet"),]
 
 ```
 
-##### survey
+##### surveys 
 
 ```{r}
 #### plot 1 length composition plots by species (survey) ####
+
+# modify to go through each survey
+# possibly a function that takes data filtered by species and survey as an argument
 
 long_surv <- temp.surv %>%
   pivot_longer(cols = c("pred_value","obs_value"),
@@ -219,33 +226,35 @@ long_surv <- temp.surv %>%
   select(-junk)
 
 sp<-1
-plot_surv <- NULL
+plot_surv <- list()
 especies<-unique(long_surv$species)
-for (sp in especies) {
-
-  temp_size<-long_surv %>% filter(species == sp & number==1) %>%
-    group_by(year) %>%
-    summarize(mu_ss=mean(InpN))
-
-  plot_surv[[sp]] <- long_surv %>% filter (species==sp& number==1) %>%
-    ggplot() +
-    aes(x=lenbin, y = value) +
-    geom_line(aes(col = kind)) +
-    facet_wrap(~year, dir="v") +
-    geom_text(data=temp_size, aes(x = 4.5, y = 0.5, label = mu_ss), size=3) +
-    theme(legend.position = "bottom") +
-    labs(col="") +
-    guides(col = guide_legend(nrow = 1))
-
-  #ggsave(paste0(plotdir,"complot_surv_",sp,".jpeg"), plot_surv, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
-
-}
+  for (sp in especies) {
+    
+    temp_size<-long_surv %>% filter(species == sp & number==1) %>%
+      group_by(year) %>%
+      summarize(mu_ss=mean(InpN))
+    
+    plot_surv[[sp]] <- long_surv %>% filter (species==sp& number==1) %>%
+      ggplot() +
+      aes(x=lenbin, y = value) +
+      geom_line(aes(col = kind)) +
+      facet_wrap(~year, dir="v") +
+      geom_text(data=temp_size, aes(x = 4.5, y = 0.5, label = mu_ss), size=3) +
+      theme(legend.position = "bottom") +
+      labs(col="") +
+      guides(col = guide_legend(nrow = 1))
+    
+    #ggsave(paste0(plotdir,"complot_surv_",sp,".jpeg"), plot_surv, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+    
+  }
+  
+  
 
 ```
 
-##### Size composition of surveys by species {.tabset}
+##### Size composition of survey 1 by species {.tabset}
 
-```{r, results = 'asis'}
+```{r, results = 'asis', fig.height=10, fig.width=9}
 for (sp in especies){
   tmp <- plot_surv[[sp]]
   cat("######", sp, " \n")
@@ -255,6 +264,57 @@ for (sp in especies){
 ```
 
 ##### {-}
+
+```{r}
+
+#### plot 1 length composition plots by species (survey) ####
+
+sp<-1
+plot_surv <- list()
+especies<-unique(long_surv$species)
+  for (sp in especies) {
+    
+    temp_size<-long_surv %>% filter(species == sp & number==2) %>%
+      group_by(year) %>%
+      summarize(mu_ss=mean(InpN))
+    
+    if(dim(temp_size)[1] > 0) {
+    
+    plot_surv[[sp]] <- long_surv %>% filter (species==sp& number==2) %>%
+      ggplot() +
+      aes(x=lenbin, y = value) +
+      geom_line(aes(col = kind)) +
+      facet_wrap(~year, dir="v", drop = FALSE) +
+      geom_text(data=temp_size, aes(x = 4.5, y = 0.5, label = mu_ss), size=3) +
+      theme(legend.position = "bottom") +
+      labs(col="") +
+      guides(col = guide_legend(nrow = 1))
+    
+    }
+    
+    if(dim(temp_size)[1] == 0) plot_surv[[sp]] <- NULL
+    
+    #ggsave(paste0(plotdir,"complot_surv_",sp,".jpeg"), plot_surv, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+    
+  }
+  
+  
+
+```
+
+##### Size composition of survey 2 by species {.tabset}
+
+```{r, results = 'asis', fig.height=10, fig.width=9}
+for (sp in especies){
+  tmp <- plot_surv[[sp]]
+  cat("######", sp, " \n")
+  print(tmp)
+  cat(" \n\n")
+  }
+```
+
+##### {-}
+
 
 ##### catch
 
@@ -293,7 +353,7 @@ for (sp in especies) {
 
 ##### Size composition of catch by species {.tabset}
 
-```{r, results = 'asis', echo = FALSE}
+```{r, results = 'asis', echo = FALSE, fig.height=10, fig.width=9}
 for (sp in especies){
   tmp <- plot_catch[[sp]]
   cat("######", sp, " \n")
@@ -495,7 +555,8 @@ observed$sizefit<- paste0(observed$lenbin,".",observed$type2)
 pred_obs <- bind_rows(predicted, observed)# %>%
   #mutate(sizefit = paste0(lenbin,".",type2))
 
-
+# similar to above for survey length comps, adjust to do for all surveys
+# possibly a function that takes filtered data by species, survey as an argument
 ### species = 1
 
 sp<-1
@@ -536,7 +597,7 @@ for (sp in especies) {
                                 # "4.o","4.e","",
                                 # "5.o","5.e","")) +
     coord_flip() +
-    facet_wrap(~year) +
+    facet_wrap(~as.numeric(year)) +
     theme_bw() +
     labs(x = "size & source (o=observed, e=expected)",
          fill = "prey",
@@ -549,9 +610,83 @@ for (sp in especies) {
 }
 ```
 
-##### Proportions by weight for stomach by predator size bin {.tabset}
+##### Proportions by weight for stomach by predator size bin survey 1 {.tabset}
 
-```{r, results = 'asis', echo = FALSE}
+```{r, results = 'asis', echo = FALSE, fig.height=10, fig.width=9}
+for (sp in especies){
+  tmp <- plot_diet[[sp]]
+  cat("######", sp, " \n")
+  print(tmp)
+  cat(" \n\n")
+  }
+```
+
+##### {-}
+
+```{r}
+sp<-1
+nsize <- hydraDataList$Nsizebins
+stringbit <- paste0(rep(1:nsize, each=2),c(".o",".e"))
+limits_use <- rep("",3*nsize)
+breaks_use <- rep(NA,3*nsize)
+for (i in 1:nsize) {
+  lo <- i*3-2
+  hi <- i*3-1
+  limits_use[lo:hi] <- paste0(rep(i, 2),c(".o",".e"))
+  breaks_use[lo:hi] <- limits_use[lo:hi]
+}
+especies<-unique(pred_obs$species)
+plot_diet <- NULL
+for (sp in especies) {
+  
+  if(dim(pred_obs %>%
+    tibble() %>% 
+    filter(species == sp & number == 2))[1] > 0) {
+
+  plot_diet[[sp]] <-  pred_obs %>%
+    tibble() %>% 
+    filter(species == sp & number == 2) %>%
+    mutate(prop = as.numeric(prop)) %>% 
+    ggplot(aes(x = sizefit, y = prop, group = type2, fill = prey)) +
+    geom_col(position = "fill") +
+    scale_x_discrete(limits = limits_use,
+                     # c("1.o","1.e","",
+                     #            "2.o","2.e","",
+                     #            "3.o","3.e","",
+                     #            "4.o","4.e","",
+                     #            "5.o","5.e",""),
+                     breaks = breaks_use, #c("1.o","1.e",NA,
+                                # "2.o","2.e",NA,
+                                # "3.o","3.e",NA,
+                                # "4.o","4.e",NA,
+                                # "5.o","5.e",NA),
+                     labels = limits_use) + #c("1.o","1.e","",
+                                # "2.o","2.e","",
+                                # "3.o","3.e","",
+                                # "4.o","4.e","",
+                                # "5.o","5.e","")) +
+    coord_flip() +
+    facet_wrap(~as.numeric(year)) +
+    theme_bw() +
+    labs(x = "size & source (o=observed, e=expected)",
+         fill = "prey",
+         y = "proportion in diet") +
+    scale_fill_brewer(type = "qual", palette = 3)
+  # facet_wrap_paginate(~ , ncol = 4, nrow = 5, page = 4)
+  }
+  
+  if(dim(pred_obs %>%
+    tibble() %>% 
+    filter(species == sp & number == 2))[1] == 0) plot_diet[[sp]] <- NULL
+
+  #ggsave(paste0(plotdir,"diet_plot_",sp,".jpeg"), plot_diet, width = 10, height = 9, dpi = 300)#, width=3000, height=2500, res=250)
+
+}
+```
+
+##### Proportions by weight for stomach by predator size bin survey 2 {.tabset}
+
+```{r, results = 'asis', echo = FALSE, fig.height=10, fig.width=9}
 for (sp in especies){
   tmp <- plot_diet[[sp]]
   cat("######", sp, " \n")
