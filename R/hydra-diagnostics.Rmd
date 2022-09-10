@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
 suppressPackageStartupMessages(library(tidyverse))
 library(ggforce)
 source("../R/read.report.R")
+source("../R/gettables.R")
 
 ```
 
@@ -106,6 +107,15 @@ p3 <- catch_obs %>%
 ```{r}
 repfile <- "../test-data/hydra_sim.rep"
 output<-reptoRlist(repfile)
+
+obs_surveyB <- hydraDataList$observedBiomass
+obs_catchB <- hydraDataList$observedCatch
+
+biorows <- dim(obs_surveyB)[1]
+catchrows <- dim(obs_catchB)[1]
+#
+indexfits <- gettables(repfile, biorows, catchrows)
+
 ```
 
 ### show run overview
@@ -114,7 +124,79 @@ output<-reptoRlist(repfile)
 
 #### abundance indices
 
+```{r}
+#survey_obs <- hydraDataList$observedBiomass %>% 
+survey_obspred <- indexfits[1][[1]] %>%
+  mutate(obs = biomass + 1e-07,
+         pred = pred_bio + 1e-07,
+         log_obs = log(obs),
+         log_pred = log(pred),
+         log_lo = log_obs - 1.96*cv,
+         log_hi = log_obs + 1.96*cv,
+         obs_lo = exp(log_lo),
+         obs_hi = exp(log_hi),
+         species = hydraDataList$speciesList[species])
+```
+
+#### fits to survey indices of abundance {.tabset}
+```{r, results = 'asis'}
+for (surv in unique(survey_obspred$survey)) {
+  cat("##### Survey #", surv, " \n")
+  p1 <- survey_obspred %>% 
+  filter(survey == surv) %>% 
+  ggplot() +
+  aes(x= year, y = log_obs, group = species, col=factor(survey)) +
+  geom_errorbar(aes(ymin = log_lo, ymax = log_hi)) +
+  geom_point() +
+  geom_line(aes(x=year, y=log_pred), col = "blue") +
+  facet_wrap(~species, scales = "free_y") +
+  theme_bw() +
+  guides(species = "None")
+  print(p1)
+  cat(" \n\n")
+  }
+```
+
+#### {-}
+
 #### catch
+
+```{r}
+#catch_obs <- hydraDataList$observedCatch %>% 
+catch_obspred <- indexfits[2][[1]] %>% 
+  mutate(obs = catch + 1e-07,
+         pred = pred_catch + 1e-07,
+         log_obs = log(obs),
+         log_pred = log(pred),
+         log_lo = log_obs - 1.96*cv,
+         log_hi = log_obs + 1.96*cv,
+         obs_lo = exp(log_lo),
+         obs_hi = exp(log_hi),
+         species = hydraDataList$speciesList[species])
+```
+
+#### fits to Catch time series {.tabset} 
+
+```{r, results = 'asis'}
+for (fleet in unique(catch_obspred$fishery)) {
+  cat("##### Fleet #", fleet, " \n")
+p3 <- catch_obspred %>% 
+  filter(fishery == fleet,
+         catch > 0) %>% 
+  ggplot() +
+  aes(x= year, y = log_obs, group = species, col= factor(fishery)) +
+  geom_errorbar(aes(ymin = log_lo, ymax = log_hi)) +
+  geom_point() +
+  geom_line(aes(x=year, y=log_pred), col = "blue") +
+  facet_wrap(~species, scales = "free_y") +
+  theme_bw() +
+  guides(species = "None")
+  print(p3)
+  cat(" \n\n")
+}
+```
+
+#### {-}
 
 #### size comps
 
