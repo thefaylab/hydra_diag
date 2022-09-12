@@ -790,9 +790,87 @@ Maturity
 
 Feeding stuff
 
-Recruitment
+Estimated Recruitment time series
+
+```{r}
+est_recruits <- output$EstRec %>%
+  as.data.frame() %>% 
+  mutate(species = hydraDataList$speciesList) %>% 
+  select(species, everything()) %>% 
+  pivot_longer(cols = -species, names_to = "year") %>% 
+  mutate(year = as.integer(str_remove(year, "V")),
+         log_rec = ifelse(value > 0,log(value),NA)) %>% 
+  I()
+#est_recruits
+```
+
+```{r}
+est_recruits %>% 
+  ggplot() +
+  aes(x = year, y = value) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "Recruitment (thousands)",
+       title = "Time series of estiamted recruitment")
+```
+time series of log-recruitment
+```{r}
+est_recruits %>% 
+  ggplot() +
+  aes(x = year, y = log_rec) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "ln(Recruitment)",
+       title = "Time series of LN(Recruitment)")
+```
 
 Biomass time series
+
+```{r}
+est_bio <- output$EstBsize %>%
+  rowSums() %>% 
+  as.data.frame() %>% 
+  rename(bio = ".") %>% 
+  mutate(species = rep(hydraDataList$speciesList, each = hydraDataList$Nyrs*5),
+         year  = rep(1:(hydraDataList$Nyrs*5),11),
+         year = 0.8 + year / 5,  #5 time steps per year
+         log_bio = ifelse(bio>0,log(bio),NA)) %>%
+  I()
+#est_bio
+```
+
+```{r}
+est_bio %>% 
+  ggplot() +
+  aes(x = year, y = bio) +
+  #geom_point() +
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "Biomass (t)",
+       title = "Time series of estimated biomass")
+```
+
+
+```{r}
+est_bio %>% 
+  ggplot() +
+  aes(x = year, y = log_bio) +
+  #geom_point() +
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "Biomass (t)",
+       title = "Time series of estimated LN(biomass)")
+```
 
 Fishing mortality time series
 
