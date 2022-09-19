@@ -3,7 +3,7 @@ hydraplots <- function(data, report, outfile = "../outputs/junk.html") {
   #data_object = "../test-data/hydraDataList.rda"
   data_object = data
   #repfile <- "../test-data/hydra_sim.rep"
-  repfile <- repfile
+  repfile <- report
   #outfile = "../outputs/junk.html"
   rmarkdown::render(input = "R/hydra-diagnostics.Rmd",
                     output_file = outfile)
