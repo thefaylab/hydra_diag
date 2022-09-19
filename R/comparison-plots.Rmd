@@ -1,0 +1,85 @@
+---
+title: "Hydra multimodel comparisons"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_fold: hide
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
+                      knitr.duplicate.label = "allow")
+suppressPackageStartupMessages(library(tidyverse))
+library(ggforce)
+source("../R/read.report.R")
+source("../R/gettables.R")
+
+```
+
+
+### load data objects
+
+```{r}
+#datafile object
+#load("../test-data/hydraDataList.rda")
+load(data_object)
+```
+
+
+```{r}
+#repfiles <- c("../test-data/hydra_sim.rep","../test-data/hydra_sim.rep")
+#output<-purrr::map_dfr(repfiles[[1]], reptoRlist, .id = "model")
+output<-purrr::map(repfiles, reptoRlist)
+est_bio <- map(output, "EstBsize") %>%  
+  #walk(as.data.frame) %>% 
+  map_dfr(as.data.frame, .id = "model") %>% 
+  I()
+```
+
+Biomass time series
+
+```{r}
+nmodel <- length(repfiles)
+est_bio <- est_bio %>%  #output$EstBsize %>%
+  #rowSums() %>% 
+  tibble() %>% 
+  mutate(bio = rowSums(across(where(is.numeric)))) %>% 
+  mutate(species = rep(rep(hydraDataList$speciesList, each = hydraDataList$Nyrs*5),nmodel),
+         year  = rep(rep(1:(hydraDataList$Nyrs*5),11),nmodel),
+         year = 0.8 + year / 5,  #5 time steps per year
+         log_bio = ifelse(bio>0,log(bio),NA)) %>% 
+         #model = as.factor(model)) %>%
+  I()
+#est_bio
+```
+
+```{r}
+est_bio %>% 
+  ggplot() +
+  aes(x = year, y = bio, col = model) +
+  #geom_point() +x
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "Biomass (t)",
+       title = "Time series of estimated biomass")
+```
+
+
+```{r}
+est_bio %>% 
+  ggplot() +
+  aes(x = year, y = log_bio, col = model) +
+  #geom_point() +
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "Biomass (t)",
+       title = "Time series of estimated LN(biomass)")
+```
+
+Fishing mortality time series
+
+Biomass consumed time series
