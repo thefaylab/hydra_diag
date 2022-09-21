@@ -613,10 +613,6 @@ dev.off()
 ```
 
 
-##### Effective sample size plots
-
-
-
 #### Diet composition data
 
 ```{r}
@@ -781,6 +777,101 @@ for (sp in especies){
 
 ##### Effective sample size plots
 
+#### plot 5 survey sample size plots
+
+```{r}
+dat_surv <- read.csv("outputs/sizecomps.csv", header = T)
+dat_surv<-dat_surv %>% filter (label=="survey")
+
+temp_surv = numeric()
+number = numeric(); number = sort(unique(dat_surv$number))
+for (n in 1:length(number)) {
+  pos0 = numeric(); pos0 = which(dat_surv$number == number[n])
+
+  species = numeric(); species = sort(unique(dat_surv$species[pos0]))
+  for (e in 1:length(species)) {
+    pos1 = numeric(); pos1 = which(dat_surv$species[pos0] == species[e])
+
+    year = numeric(); year = sort(unique(dat_surv$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1
+    for (y in 1:length(year)) {
+      pos2 = numeric(); pos2 = which(dat_surv$year[pos0][pos1] == year[y])
+
+      total=numeric()
+      sum1=sum(dat_surv$pred_value[pos0][pos1][pos2]*(1-dat_surv$pred_value[pos0][pos1][pos2]))
+      sum2=sum((dat_surv$obs_value[pos0][pos1][pos2] - dat_surv$pred_value[pos0][pos1][pos2])^2)
+      total= sum1/sum2
+
+      tt1 = numeric()
+      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_surv$InpN[pos0][pos1][pos2]), EffN=total)
+      temp_surv = rbind(temp_surv, tt1)
+    }
+  }
+}
+```
+
+```{r}
+#sp<-1
+
+for (isurvey in unique(temp_surv$number)) {
+
+  plot_size <- temp_surv %>% filter(number==isurvey) %>%
+    ggplot() +
+    aes(x=EffN, y = InpN) +
+    geom_point() +
+    facet_wrap(~species)
+
+  ggsave(paste0(plotdir,"samplesize_survey_",isurvey,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+
+}
+```
+
+#### plot 5 catch sample size plots
+
+```{r}
+dat_catch <- read.csv("outputs/sizecomps.csv", header = T)
+dat_catch<-dat_catch %>% filter (label=="catch")
+
+temp_catch = numeric()
+number = numeric(); number = sort(unique(dat_catch$number))
+for (n in 1:length(number)) {
+  pos0 = numeric(); pos0 = which(dat_catch$number == number[n])
+
+  species = numeric(); species = sort(unique(dat_catch$species[pos0]))
+  for (e in 1:length(species)) {
+    pos1 = numeric(); pos1 = which(dat_catch$species[pos0] == species[e])
+
+    year = numeric(); year = sort(unique(dat_catch$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1
+    for (y in 1:length(year)) {
+      pos2 = numeric(); pos2 = which(dat_catch$year[pos0][pos1] == year[y])
+
+      total=numeric()
+      sum1=sum(dat_catch$pred_value[pos0][pos1][pos2]*(1-dat_catch$pred_value[pos0][pos1][pos2]))
+      sum2=sum((dat_catch$obs_value[pos0][pos1][pos2] - dat_catch$pred_value[pos0][pos1][pos2])^2)
+      total= sum1/sum2
+
+      tt1 = numeric()
+      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_catch$InpN[pos0][pos1][pos2]), EffN=total)
+      temp_catch = rbind(temp_catch, tt1)
+    }
+  }
+}
+```
+
+```{r}
+#sp<-1
+
+for (ifleet in unique(temp_catch[,1])) {
+
+  plot_size<- temp_catch %>% filter(number==ifleet) %>%
+    ggplot() +
+    aes(x=EffN, y = InpN) +
+    geom_point() +
+    facet_wrap(~species)
+
+  ggsave(paste0(plotdir,"samplesize_catch_",ifleet,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+
+}
+```
 
 ### Model output (derived quantities)
 
