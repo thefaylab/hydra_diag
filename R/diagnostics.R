@@ -473,7 +473,7 @@ for (n in 1:length(number)) {
 
 #write.csv(temp_surv, file = "outputs/ss.csv", row.names = T)
 
-sp<-1
+#sp<-1
 
 for (isurvey in unique(temp_surv$number)) {
 
@@ -521,7 +521,7 @@ for (n in 1:length(number)) {
 temp_catch
 #write.csv(temp_catch, file = "outputs/cc.csv", row.names = T)
 
-sp<-1
+#sp<-1
 
 for (ifleet in unique(temp_catch[,1])) {
 
