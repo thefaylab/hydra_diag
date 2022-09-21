@@ -443,26 +443,43 @@ for (sp in especies) {
 #### plot 5 survey sample size plots ####
 plotdir <- "outputs/figures/"
 
-obs_survey<-read.table(tsfile, skip=1695, nrows=1680, header=F)
-colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')
+dat_surv <- read.csv("outputs/sizecomps.csv", header = T)
+dat_surv<-dat_surv %>% filter (label=="survey")
 
-predicted_survey<-read.table("test-data/hydra_sim.rep", skip=17618, nrows=1680, header=F)
-colnames(predicted_survey) <- c('number','year','species','data','cv','predicted','residual','nll')
-head(predicted_survey)
+temp_surv = numeric()
+number = numeric(); number = sort(unique(dat_surv$number))
+for (n in 1:length(number)) {
+  pos0 = numeric(); pos0 = which(dat_surv$number == number[n])
 
-predicted_survey$InpN<-obs_survey$InpN
-names(predicted_survey)
+  species = numeric(); species = sort(unique(dat_surv$species[pos0]))
+  for (e in 1:length(species)) {
+    pos1 = numeric(); pos1 = which(dat_surv$species[pos0] == species[e])
 
+    year = numeric(); year = sort(unique(dat_surv$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1
+    for (y in 1:length(year)) {
+      pos2 = numeric(); pos2 = which(dat_surv$year[pos0][pos1] == year[y])
+
+      total=numeric()
+      sum1=sum(dat_surv$pred_value[pos0][pos1][pos2]*(1-dat_surv$pred_value[pos0][pos1][pos2]))
+      sum2=sum((dat_surv$obs_value[pos0][pos1][pos2] - dat_surv$pred_value[pos0][pos1][pos2])^2)
+      total= sum1/sum2
+
+      tt1 = numeric()
+      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_surv$InpN[pos0][pos1][pos2]), EffN=total)
+      temp_surv = rbind(temp_surv, tt1)
+    }
+  }
+}
+
+#write.csv(temp_surv, file = "outputs/ss.csv", row.names = T)
 
 sp<-1
 
-# especies<-unique(predicted_survey$species)
-# for (sp in especies) {
-for (isurvey in unique(predicted_survey$number)) {
+for (isurvey in unique(temp_surv$number)) {
 
-  plot_size <- predicted_survey %>% filter(number==isurvey) %>%
+  plot_size <- temp_surv %>% filter(number==isurvey) %>%
     ggplot() +
-    aes(x=nll, y = InpN) +  # todo: should be InpN vs EffN
+    aes(x=EffN, y = InpN) +
     geom_point() +
     facet_wrap(~species)
 
@@ -472,33 +489,51 @@ for (isurvey in unique(predicted_survey$number)) {
 
 
 #### plot 5 catch sample size plots ####
-### still working on this
 
-obs_catch<-read.table(tsfile, skip=4109, nrows=608, header=F)
-colnames(obs_catch) <- c('number','area','year','species','type','InpN','1','2','3','4','5')
+dat_catch <- read.csv("outputs/sizecomps.csv", header = T)
+dat_catch<-dat_catch %>% filter (label=="catch")
 
-predicted_catch<-read.table(repfile, skip=17618, nrows=1680, header=F)
-colnames(predicted_catch) <- c('number','year','species','data','cv','predicted','residual','nll')
+temp_catch = numeric()
+number = numeric(); number = sort(unique(dat_catch$number))
+for (n in 1:length(number)) {
+  pos0 = numeric(); pos0 = which(dat_catch$number == number[n])
 
-predicted_catch$InpN<-obs_catch$InpN
-names(predicted_catch)
+  species = numeric(); species = sort(unique(dat_catch$species[pos0]))
+  for (e in 1:length(species)) {
+    pos1 = numeric(); pos1 = which(dat_catch$species[pos0] == species[e])
 
+    year = numeric(); year = sort(unique(dat_catch$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1
+    for (y in 1:length(year)) {
+      pos2 = numeric(); pos2 = which(dat_catch$year[pos0][pos1] == year[y])
+
+      total=numeric()
+      sum1=sum(dat_catch$pred_value[pos0][pos1][pos2]*(1-dat_catch$pred_value[pos0][pos1][pos2]))
+      sum2=sum((dat_catch$obs_value[pos0][pos1][pos2] - dat_catch$pred_value[pos0][pos1][pos2])^2)
+      total= sum1/sum2
+
+      tt1 = numeric()
+      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_catch$InpN[pos0][pos1][pos2]), EffN=total)
+      temp_catch = rbind(temp_catch, tt1)
+    }
+  }
+}
+
+temp_catch
+#write.csv(temp_catch, file = "outputs/cc.csv", row.names = T)
 
 sp<-1
 
-#especies<-unique(predicted_survey$species)
-for (ifleet in unique(predicted_catch[,1])) {
+for (ifleet in unique(temp_catch[,1])) {
 
-  plot_size<- predicted_catch %>% filter(number==ifleet) %>%
+  plot_size<- temp_catch %>% filter(number==ifleet) %>%
     ggplot() +
-    aes(x=nll, y = InpN) +   # todo: should be InpN vs EffN
+    aes(x=EffN, y = InpN) +
     geom_point() +
     facet_wrap(~species)
 
   ggsave(paste0(plotdir,"samplesize_catch_",ifleet,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
 
 }
-
 
 
 #### END ####
