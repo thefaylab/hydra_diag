@@ -465,7 +465,7 @@ for (n in 1:length(number)) {
       total= sum1/sum2
 
       tt1 = numeric()
-      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_surv$InpN[pos0][pos1][pos2]), EffN=total)
+      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_surv$InpN[pos0][pos1][pos2]), EffN=total*unique(dat_surv$InpN[pos0][pos1][pos2]))
       temp_surv = rbind(temp_surv, tt1)
     }
   }
@@ -512,7 +512,7 @@ for (n in 1:length(number)) {
       total= sum1/sum2
 
       tt1 = numeric()
-      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_catch$InpN[pos0][pos1][pos2]), EffN=total)
+      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_catch$InpN[pos0][pos1][pos2]), EffN=total*unique(dat_catch$InpN[pos0][pos1][pos2]))
       temp_catch = rbind(temp_catch, tt1)
     }
   }
