@@ -524,9 +524,15 @@ complot_year<- long_temp2 %>%
 print(complot_year)
 ```
 
-###### Surveys
+###### Surveys (1)
 
 ```{r}
+# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
+# a hack
+temp.surv.all <- temp.surv
+
+temp.surv <- temp.surv %>% dplyr::filter(number ==1)
+
 temporal2 = numeric()
 especie = numeric(); especie = sort(unique(temp.surv$species)) # especies
 for(e in 1:length(especie)){
@@ -589,6 +595,83 @@ complot_year<- long_temp2 %>%
 
 #ggsave(paste0(plotdir,"complot_year_survey.jpeg"), complot_year)#, width=3000, height=2500, res=250)
 print(complot_year)
+
+temp.surv <- temp.surv.all
+```
+
+###### Surveys (2)
+
+```{r}
+# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
+# a hack
+temp.surv.all <- temp.surv
+
+temp.surv <- temp.surv %>% dplyr::filter(number ==2)
+
+temporal2 = numeric()
+especie = numeric(); especie = sort(unique(temp.surv$species)) # especies
+for(e in 1:length(especie)){
+  pos1 = numeric(); pos1 = which(temp.surv$species == especie[e])
+
+  temporal1 = numeric()
+  year = numeric(); year = sort(unique(temp.surv$year[pos1])) # ano
+  for(y in 1:length(year)){
+    pos2 = numeric(); pos2 = which(temp.surv$year[pos1] == year[y])
+
+    N = numeric(); N = unique(temp.surv$InpN[pos1][pos2]) # sample size para el estrato especie ano
+    n_ejemplares_obs = numeric(); n_ejemplares_obs = round(N * temp.surv$obs_value[pos1][pos2] , 0) # crea vector de proporcion por el sample size
+    n_ejemplares_est = numeric(); n_ejemplares_est = round(N * temp.surv$pred_value[pos1][pos2], 0)
+
+    tt1 = numeric()
+    tt1 = data.frame(YEAR = year[y], BIN = temp.surv$lenbin[pos1][pos2], N = N, N_EJEM_OBS = n_ejemplares_obs, N_EJEM_EST = n_ejemplares_est)
+
+    temporal1 = rbind(temporal1, tt1) # guarda la proporcion * sample size para la especie seleccionada y ano
+  }
+
+  bin1_obs = numeric(); bin1_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 1)])
+  bin2_obs = numeric(); bin2_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 2)])
+  bin3_obs = numeric(); bin3_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 3)])
+  bin4_obs = numeric(); bin4_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 4)])
+  bin5_obs = numeric(); bin5_obs = sum(temporal1$N_EJEM_OBS[which(temporal1$BIN == 5)])
+
+  total_obs = sum(bin1_obs, bin2_obs, bin3_obs, bin4_obs, bin5_obs)
+  prop_new_obs = numeric(); prop_new_obs = c(bin1_obs, bin2_obs, bin3_obs, bin4_obs, bin5_obs) / total_obs
+
+  bin1_pred = numeric(); bin1_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 1)])
+  bin2_pred = numeric(); bin2_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 2)])
+  bin3_pred = numeric(); bin3_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 3)])
+  bin4_pred = numeric(); bin4_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 4)])
+  bin5_pred = numeric(); bin5_pred = sum(temporal1$N_EJEM_EST[which(temporal1$BIN == 5)])
+
+  total_pred = sum(bin1_pred, bin2_pred, bin3_pred, bin4_pred, bin5_pred)
+  prop_new_est = numeric(); prop_new_est = c(bin1_pred, bin2_pred, bin3_pred, bin4_pred, bin5_pred) / total_pred
+
+  tt2 = numeric()
+  tt2 = data.frame(ESPECIE = especie[e], BIN = seq(1, 5, 1), PROP_OBS = prop_new_obs, PROP_EST = prop_new_est)
+
+  temporal2 = rbind(temporal2, tt2) # almacena por cada especie
+}
+
+long_temp2 <- temporal2 %>%
+  pivot_longer(cols = c("PROP_OBS","PROP_EST"),
+               names_to = c("kind","junk"),names_sep = " ") %>%
+  select(-junk)
+
+complot_year<- long_temp2 %>%
+  ggplot() +
+  aes(x = BIN, y = value) +
+  geom_line(aes(col=kind)) +
+  theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  labs(x="length bin", y="proportion value", title="Length composition aggregated by year survey data") +
+  facet_wrap(.~ESPECIE) +
+  theme(legend.position = "bottom") +
+  labs(col="") +
+  guides(col = guide_legend(nrow = 1))
+
+#ggsave(paste0(plotdir,"complot_year_survey.jpeg"), complot_year)#, width=3000, height=2500, res=250)
+print(complot_year)
+
+temp.surv <- temp.surv.all
 ```
 
 ##### Residuals for size composition data
@@ -781,7 +864,7 @@ for (sp in especies){
 
 #### plot 5 survey sample size plots
 
-```{r}
+```{r, eval=FALSE}
 dat_surv <- read.csv("outputs/sizecomps.csv", header = T)
 dat_surv<-dat_surv %>% filter (label=="survey")
 
@@ -811,7 +894,7 @@ for (n in 1:length(number)) {
 }
 ```
 
-```{r}
+```{r, eval=FALSE}
 #sp<-1
 
 for (isurvey in unique(temp_surv$number)) {
@@ -829,7 +912,7 @@ for (isurvey in unique(temp_surv$number)) {
 
 #### plot 5 catch sample size plots
 
-```{r}
+```{r, eval=FALSE}
 dat_catch <- read.csv("outputs/sizecomps.csv", header = T)
 dat_catch<-dat_catch %>% filter (label=="catch")
 
@@ -859,7 +942,7 @@ for (n in 1:length(number)) {
 }
 ```
 
-```{r}
+```{r, eval=FALSE}
 #sp<-1
 
 for (ifleet in unique(temp_catch[,1])) {
@@ -925,7 +1008,7 @@ est_recruits %>%
 
 Biomass time series
 
-```{r}
+```{r, eval=FALSE}
 est_bio <- output$EstBsize %>%
   rowSums() %>% 
   as.data.frame() %>% 
@@ -938,7 +1021,7 @@ est_bio <- output$EstBsize %>%
 #est_bio
 ```
 
-```{r}
+```{r, eval=FALSE}
 est_bio %>% 
   ggplot() +
   aes(x = year, y = bio) +
@@ -952,7 +1035,7 @@ est_bio %>%
 ```
 
 
-```{r}
+```{r, eval=FALSE}
 est_bio %>% 
   ggplot() +
   aes(x = year, y = log_bio) +
