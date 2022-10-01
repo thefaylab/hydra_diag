@@ -687,16 +687,41 @@ ggplot(temp.catch, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))
 #dev.off()
 ```
 
-##### Survey size composition pearson residuals
+##### Survey size composition pearson residuals (survey 1)
 ```{r}
+# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
+# a hack
+temp.surv.all <- temp.surv
+
+temp.surv <- temp.surv %>% dplyr::filter(number ==1)
+
 ### survey, species = 1 to 11
 #tiff(paste0(plotdir,"bubbleplot_survey.jpeg"), width=3000, height=2500, res=250)
 ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
   geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
   facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
-dev.off()
+#dev.off()
+
+temp.surv <- temp.surv.all
 ```
 
+##### Survey size composition pearson residuals (survey 2)
+```{r}
+# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
+# a hack
+temp.surv.all <- temp.surv
+
+temp.surv <- temp.surv %>% dplyr::filter(number ==2)
+
+### survey, species = 1 to 11
+#tiff(paste0(plotdir,"bubbleplot_survey.jpeg"), width=3000, height=2500, res=250)
+ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
+  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
+#dev.off()
+
+temp.surv <- temp.surv.all
+```
 
 #### Diet composition data
 
@@ -990,7 +1015,7 @@ est_recruits %>%
   theme_minimal() +
   labs(x = "Year",
        y = "Recruitment (thousands)",
-       title = "Time series of estiamted recruitment")
+       title = "Time series of estimated recruitment")
 ```
 time series of log-recruitment
 ```{r}
@@ -1008,20 +1033,25 @@ est_recruits %>%
 
 Biomass time series
 
-```{r, eval=FALSE}
+```{r}
+
+# time steps per year varies by model, need to save it
+# updated rep file
+stepperyr <- output$Nstepsyr
+
 est_bio <- output$EstBsize %>%
   rowSums() %>% 
   as.data.frame() %>% 
   rename(bio = ".") %>% 
-  mutate(species = rep(hydraDataList$speciesList, each = hydraDataList$Nyrs*5),
-         year  = rep(1:(hydraDataList$Nyrs*5),11),
-         year = 0.8 + year / 5,  #5 time steps per year
+  mutate(species = rep(hydraDataList$speciesList, each = hydraDataList$Nyrs*stepperyr),
+         year  = rep(1:(hydraDataList$Nyrs*stepperyr),hydraDataList$Nspecies),
+         year = (1-1/stepperyr) + year / stepperyr,  #5 time steps per year
          log_bio = ifelse(bio>0,log(bio),NA)) %>%
   I()
 #est_bio
 ```
 
-```{r, eval=FALSE}
+```{r}
 est_bio %>% 
   ggplot() +
   aes(x = year, y = bio) +
@@ -1050,4 +1080,18 @@ est_bio %>%
 
 Fishing mortality time series
 
+```{r}
+est_F <- output$EstFsize
+
+
+```
+
+
 Predation mortality time series
+
+```{r}
+est_M2 <- output$EstM2size
+
+
+```
+
