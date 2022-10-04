@@ -25,31 +25,19 @@ load("test-data/hydraDataList.rda")
 names(hydraDataList)
 
 # read in output files
-# todo - add output directory as an argument to the function that calls this script
-# for now, read in test output
 output<-reptoRlist(repfile)# read hydra rep file
-#names(output)
-#head(output)
-
-#Ncatch_obs 720
-#Ncatch_size_obs 608
-#Nsurvey_size_obs 1680
-#Ndietprop_obs 4721
-#catch_size_pred 1855
-# todo - read in dimensions from data file directly
 
 #### READ OBSERVED (.dat) AND ESTIMATED (.rep) SURVEY VALUES ####
-# careful with "skip" and "nrows" value!
-# todo - add input data file / directory as an argument to the function that calls this script
 #obs_survey<-read.table(tsfile, skip=1695, nrows=1680, header=F)
 obs_survey <- hydraDataList$observedSurvSize %>% tibble()
 
 #colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')  #todo - modify so number of bins is based on size of dataframe
-obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>%
-  filter(value != -999)%>%
-  mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
+obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>% #filter(value != -999)%>%
+    mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
          label = rep("survey",nrow(.)),
          species = hydraDataList$speciesList[species])
+obs_survey$value[which(obs_survey$value == -999)] = 0.00001
+
 #obs_survey$label<-rep(("survey"),each=7189)
 #dim(obs_survey) #7189
 
@@ -71,8 +59,9 @@ obs_catch <- hydraDataList$observedCatchSize %>% tibble()
 obs_catch<-obs_catch %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
   mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
          label = rep("catch",nrow(.)),
-         species = hydraDataList$speciesList[species]) %>%
-  filter(value != -999)
+         species = hydraDataList$speciesList[species])# %>%  filter(value != -999)
+obs_catch$value[which(obs_catch$value == -999)] = 0.00001
+
 #obs_catch$label<-rep(("catch"),each=1855)
 #dim(obs_catch) #1855
 
@@ -90,7 +79,6 @@ colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin'
 diet_catch <- bind_rows(obs_catch, obs_survey)
 
 #### READ OBSERVED (.dat) AND PREDICTED (.rep) DIET PROPORTION VALUES ####
-# todo as above, make the data file an argument and have the dimensions be determined from the file rather than hard-coded
 #obs_diet<-read.table(tsfile, skip=4724, nrows=4721, header=F)
 obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
 
@@ -98,10 +86,13 @@ obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
 obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
          species = hydraDataList$speciesList[species],
-         label = rep("diet",nrow(.))) %>%
-  filter(value >0 )
+         label = rep("diet",nrow(.))) #%>% filter(value >0 )
+obs_diet$value[which(obs_diet$value == -999)] = 0.00001
+
 #obs_diet$label<-rep(("diet"),each=22810)
-#dim(obs_diet) #22810
+#dim(obs_diet) #56652
+
+# observed data in hydradatalist 56652, predicted data in output file 56412
 
 pred_diet<-output$pred_dietprop
 obs_diet$pred_diet<-pred_diet
@@ -109,6 +100,7 @@ nll_diet<-output$nll_dietprop
 obs_diet$nll_diet<-nll_diet
 obs_diet$pearson<-((obs_diet$value-obs_diet$pred_diet)/sqrt(obs_diet$pred_diet))
 colnames(obs_diet) <- c('number','year','species','lenbin','InpN','prey','obs_value','label', 'pred_value','nll','pearson')
+write.csv(pred_diet, file = "outputs/pred_diet.csv", row.names = T)
 
 
 #mydata<-full_join(diet_catch, obs_diet, by = NULL,copy = FALSE)
@@ -126,28 +118,19 @@ write.csv(mydata, file = "outputs/sizecomps.csv", row.names = T)
 write.csv(obs_diet, file = "outputs/survdiet.csv", row.names = T)
 
 #### PLOTS ####
-# 2 options --> read the csv file saved in the previous steps
-#           --> or continue with mydata data frame
-# data now read to sizecomps.csv and survdiet.csv
-
-#setwd("C:/Users/macristina.perez/Documents/GitHub/hydra_diag/Diagnostics")
 data <- read.csv("outputs/sizecomps.csv", header = T)
-#data<- select(data, -X)
+data<- select(data, -X)
 data$residual<-ifelse(data$pearson<0,"negative","positive")
 data$res_abs<-abs(data$pearson)
 data<-as.data.frame(data)
-#head(data)
-
-#names(data)
-#str(data)
 
 #select type of data "label= catch, survey or diet"
 temp.catch = data[which(data$label == "catch"),]
 temp.surv = data[which(data$label == "survey"),]
 #temp.diet = data[which(data$label == "diet"),]
 
-data <- read.csv("outputs/survdiet.csv", header = T)
-#data<- select(data, -X)
+data<- read.csv("outputs/survdiet.csv", header = T)
+data<- select(data, -X)
 data$residual<-ifelse(data$pearson<0,"negative","positive")
 data$res_abs<-abs(data$pearson)
 temp.diet = data[which(data$label == "diet"),]
@@ -521,7 +504,7 @@ for (n in 1:length(number)) {
 temp_catch
 #write.csv(temp_catch, file = "outputs/cc.csv", row.names = T)
 
-#sp<-1
+sp<-1
 
 for (ifleet in unique(temp_catch[,1])) {
 
