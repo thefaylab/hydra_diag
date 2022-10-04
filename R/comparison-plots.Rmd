@@ -21,13 +21,13 @@ source("../R/gettables.R")
 
 ```{r}
 #datafile object
-#load("../test-data/hydraDataList.rda")
-load(data_object)
+load("../test-data/hydraDataList.rda")
+#load(data_object)
 ```
 
 
 ```{r}
-#repfiles <- c("../test-data/hydra_sim.rep","../test-data/hydra_sim.rep")
+repfiles <- c("../test-data/hydra_sim.rep","../test-data/hydra_sim.rep")
 #output<-purrr::map_dfr(repfiles[[1]], reptoRlist, .id = "model")
 output<-purrr::map(repfiles, reptoRlist)
 est_bio <- map(output, "EstBsize") %>%  

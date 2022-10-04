@@ -10,7 +10,6 @@
 library(tidyverse)
 library(ggforce)
 
-
 source("R/read.report.R")
 
 # input & output files to use (these should be arguments in the function that calls this script)
@@ -28,30 +27,21 @@ names(hydraDataList)
 # todo - add output directory as an argument to the function that calls this script
 # for now, read in test output
 output<-reptoRlist(repfile)# read hydra rep file
-#names(output)
-#head(output)
-
-#Ncatch_obs 720
-#Ncatch_size_obs 608
-#Nsurvey_size_obs 1680
-#Ndietprop_obs 4721
-#catch_size_pred 1855
-# todo - read in dimensions from data file directly
 
 #### READ OBSERVED (.dat) AND ESTIMATED (.rep) SURVEY VALUES ####
-# careful with "skip" and "nrows" value!
 # todo - add input data file / directory as an argument to the function that calls this script
 #obs_survey<-read.table(tsfile, skip=1695, nrows=1680, header=F)
 obs_survey <- hydraDataList$observedSurvSize %>% tibble()
 
-#colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')  #todo - modify so number of bins is based on size of dataframe
-obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>%
-  filter(value != -999)%>%
-  mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
-         label = rep("survey",nrow(.)),
-         species = hydraDataList$speciesList[species])
+colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')  #todo - modify so number of bins is based on size of dataframe
+obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>%  #filter(value != -999)%>%
+    mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
+    label = rep("survey",nrow(.)),
+    species = hydraDataList$speciesList[species])
+obs_survey$value[which(obs_survey$value == -999)] = 0.00001
+
 #obs_survey$label<-rep(("survey"),each=7189)
-#dim(obs_survey) #7189
+#dim(obs_survey) #8400
 
 pred_surv<-output$pred_survey_size
 obs_survey$pred_surv<-pred_surv
@@ -71,8 +61,8 @@ obs_catch <- hydraDataList$observedCatchSize %>% tibble()
 obs_catch<-obs_catch %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
   mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
          label = rep("catch",nrow(.)),
-         species = hydraDataList$speciesList[species]) %>%
-  filter(value != -999)
+         species = hydraDataList$speciesList[species])# %>% filter(value != -999)
+obs_catch$value[which(obs_catch$value == -999)] = 0.00001
 #obs_catch$label<-rep(("catch"),each=1855)
 #dim(obs_catch) #1855
 
@@ -90,18 +80,18 @@ colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin'
 diet_catch <- bind_rows(obs_catch, obs_survey)
 
 #### READ OBSERVED (.dat) AND PREDICTED (.rep) DIET PROPORTION VALUES ####
-# todo as above, make the data file an argument and have the dimensions be determined from the file rather than hard-coded
 #obs_diet<-read.table(tsfile, skip=4724, nrows=4721, header=F)
 obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
 
 #obs_diet$label<-rep(("diet"),each=4721)
 obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
-         species = hydraDataList$speciesList[species],
-         label = rep("diet",nrow(.))) %>%
-  filter(value >0 )
+    species = hydraDataList$speciesList[species],
+    label = rep("diet",nrow(.))) # %>% filter(value >0 )
+obs_diet$value[which(obs_diet$value == -999)] = 0.00001
+
 #obs_diet$label<-rep(("diet"),each=22810)
-#dim(obs_diet) #22810
+#dim(obs_diet) #56652
 
 pred_diet<-output$pred_dietprop
 obs_diet$pred_diet<-pred_diet
@@ -160,7 +150,7 @@ long_catch <- temp.catch %>%
                names_to = c("kind","junk"),names_sep = "_") %>%
   select(-junk)
 
-#sp<-1
+sp<-1
 plotdir <- "outputs/figures/comp_plots/by_species/"
 
 especies<-unique(long_catch$species)
