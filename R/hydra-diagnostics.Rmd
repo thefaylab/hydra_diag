@@ -239,10 +239,10 @@ obs_catch$pearson<-((obs_catch$value-obs_catch$pred_catch)/sqrt(obs_catch$pred_c
 colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin','obs_value','label',
                          'pred_value','nll','pearson')
 
+diet_catch <- bind_rows(obs_catch, obs_survey)
 ```
 
 ```{r}
-diet_catch <- bind_rows(obs_catch, obs_survey)
 obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
 obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
