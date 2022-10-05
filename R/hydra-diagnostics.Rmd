@@ -20,10 +20,10 @@ source("../R/gettables.R")
 
 ```{r}
 #datafile object
-#load("../test-data/hydraDataList.rda")
+load("../test-data/hydraDataList.rda")
 #load(data_object)
 #hydradata is making an rds object
-hydraDataList <- readRDS(data_object)
+#hydraDataList <- readRDS(data_object)
 ```
 
 ### plot data  (maybe put at end)
@@ -107,7 +107,7 @@ p3 <- catch_obs %>%
 ### load run output
 
 ```{r}
-#repfile <- "../test-data/hydra_sim.rep"
+repfile <- "../test-data/hydra_sim.rep"
 output<-reptoRlist(repfile)
 
 obs_surveyB <- hydraDataList$observedBiomass
@@ -204,15 +204,12 @@ p3 <- catch_obspred %>%
 
 ```{r eval=plot_comps}
 obs_survey <- hydraDataList$observedSurvSize %>% tibble()
-
-#colnames(obs_survey) <- c('number','year','species','type','InpN','1','2','3','4','5')  #todo - modify so number of bins is based on size of dataframe
-obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>%
-  filter(value != -999)%>%
+obs_survey <- obs_survey %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>% #filter(value != -999)%>%
+  
   mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
          label = rep("survey",nrow(.)),
          species = hydraDataList$speciesList[species])
-#obs_survey$label<-rep(("survey"),each=7189)
-#dim(obs_survey) #7189
+obs_survey$value[which(obs_survey$value == -999)] = 0.00001
 
 pred_surv<-output$pred_survey_size
 obs_survey$pred_surv<-pred_surv
@@ -223,16 +220,15 @@ obs_survey$pearson<-((obs_survey$value-obs_survey$pred_surv)/sqrt(obs_survey$pre
 colnames(obs_survey) <- c('number','year','species','type','InpN','lenbin','obs_value','label',
                           'pred_value','nll','pearson')
 
-#obs_catch<-read.table(tsfile, skip=4109, nrows=608, header=F)
+```
+
+```{r}
 obs_catch <- hydraDataList$observedCatchSize %>% tibble()
-#colnames(obs_catch) <- c('number','area','year','species','type','InpN','1','2','3','4','5')
 obs_catch<-obs_catch %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
   mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
          label = rep("catch",nrow(.)),
-         species = hydraDataList$speciesList[species]) %>%
-  filter(value != -999)
-#obs_catch$label<-rep(("catch"),each=1855)
-#dim(obs_catch) #1855
+         species = hydraDataList$speciesList[species])# %>% filter(value != -999)
+obs_catch$value[which(obs_catch$value == -999)] = 0.00001
 
 pred_catch<-output$pred_catch_size
 obs_catch$pred_catch<-pred_catch
@@ -243,16 +239,11 @@ obs_catch$pearson<-((obs_catch$value-obs_catch$pred_catch)/sqrt(obs_catch$pred_c
 colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin','obs_value','label',
                          'pred_value','nll','pearson')
 
-
-#diet_catch<-full_join(obs_catch, obs_survey, by = NULL,copy = FALSE)
 diet_catch <- bind_rows(obs_catch, obs_survey)
+```
 
-#### READ OBSERVED (.dat) AND PREDICTED (.rep) DIET PROPORTION VALUES ####
-# todo as above, make the data file an argument and have the dimensions be determined from the file rather than hard-coded
-#obs_diet<-read.table(tsfile, skip=4724, nrows=4721, header=F)
+```{r}
 obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
-
-#obs_diet$label<-rep(("diet"),each=4721)
 obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
          species = hydraDataList$speciesList[species],
@@ -269,28 +260,20 @@ obs_diet$nll_diet<-nll_diet
 obs_diet$pearson<-((obs_diet$value-obs_diet$pred_diet)/sqrt(obs_diet$pred_diet))
 colnames(obs_diet) <- c('number','year','species','lenbin','InpN','prey','obs_value','label', 'pred_value','nll','pearson')
 
-#mydata<-full_join(diet_catch, obs_diet, by = NULL,copy = FALSE)
-#mydata <- bind_rows(diet_catch, obs_diet)
 mydata <- diet_catch %>%
   mutate(#prey = replace_na(prey, -99),
          area = replace_na(area, 1),
          type = replace_na(type, 0))
-data <- mydata
-data$residual<-ifelse(data$pearson<0,"negative","positive")
-data$res_abs<-abs(data$pearson)
-data<-as.data.frame(data)
-#head(data)
+#data <- mydata
+mydata$residual<-ifelse(mydata$pearson<0,"negative","positive")
+mydata$res_abs<-abs(mydata$pearson)
+mydata<-as.data.frame(mydata)
 
-#names(data)
-#str(data)
-
-#select type of data "label= catch, survey or diet"
-temp.catch = data[which(data$label == "catch"),]
-temp.surv = data[which(data$label == "survey"),]
+temp.catch = mydata[which(mydata$label == "catch"),]
+temp.surv = mydata[which(mydata$label == "survey"),]
 #temp.diet = data[which(data$label == "diet"),]
 
-data <- obs_diet #data <- read.csv("outputs/survdiet.csv", header = T)
-#data<- select(data, -X)
+mydata <- obs_diet #data <- read.csv("outputs/survdiet.csv", header = T)
 data$residual<-ifelse(data$pearson<0,"negative","positive")
 data$res_abs<-abs(data$pearson)
 temp.diet = data[which(data$label == "diet"),]
@@ -897,7 +880,7 @@ for (sp in especies){
 #### plot 5 survey sample size plots
 
 ```{r, eval=FALSE}
-dat_surv <- read.csv("outputs/sizecomps.csv", header = T)
+dat_surv <- read.csv("../outputs/sizecomps.csv", header = T)
 dat_surv<-dat_surv %>% filter (label=="survey")
 
 temp_surv = numeric()
@@ -937,15 +920,16 @@ for (isurvey in unique(temp_surv$number)) {
     geom_point() +
     facet_wrap(~species)
 
-  ggsave(paste0(plotdir,"samplesize_survey_",isurvey,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+#  ggsave(paste0(plotdir,"samplesize_survey_",isurvey,".jpeg"), plot_size, width = 10, height = 7, #dpi = 300)#, width=3000, height=2500, res=250)
 
+  print(plot_size)
 }
 ```
 
 #### plot 5 catch sample size plots
 
 ```{r, eval=FALSE}
-dat_catch <- read.csv("outputs/sizecomps.csv", header = T)
+dat_catch <- read.csv("../outputs/sizecomps.csv", header = T)
 dat_catch<-dat_catch %>% filter (label=="catch")
 
 temp_catch = numeric()
@@ -985,8 +969,9 @@ for (ifleet in unique(temp_catch[,1])) {
     geom_point() +
     facet_wrap(~species)
 
-  ggsave(paste0(plotdir,"samplesize_catch_",ifleet,".jpeg"), plot_size, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
+#  ggsave(paste0(plotdir,"samplesize_catch_",ifleet,".jpeg"), plot_size, width = 10, height = 7, #dpi = 300)#, width=3000, height=2500, res=250)
 
+  print(plot_size)
 }
 ```
 
