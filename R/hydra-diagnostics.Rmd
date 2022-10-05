@@ -106,7 +106,6 @@ p3 <- catch_obs %>%
 ### load run output
 
 ```{r}
-repfile <- "../test-data/hydra_sim.rep"
 output<-reptoRlist(repfile)
 
 obs_surveyB <- hydraDataList$observedBiomass
@@ -221,7 +220,7 @@ colnames(obs_survey) <- c('number','year','species','type','InpN','lenbin','obs_
 
 ```
 
-```{r}
+```{r, eval = plot_comps}
 obs_catch <- hydraDataList$observedCatchSize %>% tibble()
 obs_catch<-obs_catch %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
   mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
@@ -1103,9 +1102,32 @@ est_F %>%
 #### Predation mortality time series
 
 ```{r}
-est_M2 <- output$EstM2size
+nlen <- ncol(output$EstM2size)
+est_M2 <- output$EstM2size %>% 
+  as.data.frame() %>% 
+  pivot_longer(cols=1:ncol(.), names_to = "ilen", names_prefix = "V") %>% 
+  mutate(species = rep(hydraDataList$speciesList, each = hydraDataList$Nyrs*nlen*stepperyr),
+         year  = rep(rep(1:(hydraDataList$Nyrs*stepperyr),each=nlen), length(hydraDataList$speciesList)),
+         year = (1-1/stepperyr) + year / stepperyr) %>%
+  I()
+```
 
-
+```{r}
+est_M2 %>% 
+  ggplot() +
+  aes(x = year, y = value, col = factor(ilen)) +
+  #geom_point() +
+  geom_line() +
+  facet_wrap(~species, scales = "free") +
+  theme_minimal() +
+  labs(x = "Year",
+       y = "M2",
+       col = "length bin",
+       title = "Time series of estimated predation mortality") +
+  #theme(legend.position = "bottom") +
+  #    labs(col="") +
+  #    guides(col = guide_legend(nrow = 1))
+  NULL
 ```
 
 
