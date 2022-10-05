@@ -20,10 +20,9 @@ source("../R/gettables.R")
 
 ```{r}
 #datafile object
-load("../test-data/hydraDataList.rda")
-#load(data_object)
-#hydradata is making an rds object
-#hydraDataList <- readRDS(data_object)
+# add switch to read from rda or rds depending on string of input
+#load("../test-data/hydraDataList.rda")
+hydraDataList <- readRDS(data_object)
 ```
 
 ### plot data  (maybe put at end)
