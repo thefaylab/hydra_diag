@@ -1030,6 +1030,7 @@ est_recruits %>%
 # time steps per year varies by model, need to save it
 # updated rep file
 stepperyr <- output$Nstepsyr
+if (length(stepperyr)==0) stepperyr <- nrow(output$EstBsize)/hydraDataList$Nyrs/length(hydraDataList$speciesList)
 
 est_bio <- output$EstBsize %>%
   rowSums() %>% 
