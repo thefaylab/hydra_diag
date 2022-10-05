@@ -247,12 +247,13 @@ obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
          species = hydraDataList$speciesList[species],
          label = rep("diet",nrow(.))) %>%
-  #filter(value >0 )
-#obs_diet$label<-rep(("diet"),each=22810)
-#dim(obs_diet) #22810
  I()
+
   
 pred_diet<-output$pred_dietprop
+
+if (length(pred_diet)!=nrow(obs_diet)) obs_diet <- obs_diet %>% filter(value != 0)
+  
 obs_diet$pred_diet<-pred_diet
 nll_diet<-output$nll_dietprop
 obs_diet$nll_diet<-nll_diet
@@ -273,9 +274,9 @@ temp.surv = mydata[which(mydata$label == "survey"),]
 #temp.diet = data[which(data$label == "diet"),]
 
 mydata <- obs_diet #data <- read.csv("outputs/survdiet.csv", header = T)
-data$residual<-ifelse(data$pearson<0,"negative","positive")
-data$res_abs<-abs(data$pearson)
-temp.diet = data[which(data$label == "diet"),]
+mydata$residual<-ifelse(mydata$pearson<0,"negative","positive")
+mydata$res_abs<-abs(mydata$pearson)
+temp.diet = mydata[which(mydata$label == "diet"),]
 
 ```
 
