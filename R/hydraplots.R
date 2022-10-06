@@ -1,9 +1,13 @@
 # this generates the html output of diagnostics for a Hydra run given a data object and the report file
-hydraplots <- function(data, report, outfile = "../outputs/junk.html", plot_comps=TRUE) {
+hydraplots <- function(data, report, outfile = "../outputs/junk.html", plot_comps=TRUE, skill=FALSE, truth=NULL) {
   #data_object = "../test-data/hydraDataList.rda"
   data_object = data
   #repfile <- "../test-data/hydra_sim.rep"
   repfile <- report
+
+  if(skill){
+    truth <- truth
+  }
   #outfile = "../outputs/junk.html"
   rmarkdown::render(input = "R/hydra-diagnostics.Rmd",
                     output_file = outfile)
