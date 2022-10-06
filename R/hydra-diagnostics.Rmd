@@ -410,7 +410,7 @@ for (sp in especies) {
     ggplot() +
     aes(x=lenbin, y = value) +
     geom_line(aes(col = kind)) +
-    geom_point(data = long_surv %>% filter (species==sp, kind == "obs"),
+    geom_point(data = long_catch %>% filter (species==sp, kind == "obs"),
                aes(x=lenbin, y=value)) +
     facet_wrap(~year, dir="v") +
     geom_text(data=temp_size, aes(x = 4.8, y = 0.5, label = mu_ss), size=3) +
