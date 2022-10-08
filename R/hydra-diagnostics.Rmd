@@ -240,7 +240,7 @@ colnames(obs_catch) <- c('number','area','year','species','type','InpN','lenbin'
 diet_catch <- bind_rows(obs_catch, obs_survey)
 ```
 
-```{r}
+```{r eval=plot_comps}
 obs_diet <- hydraDataList$observedSurvDiet %>% tibble()
 obs_diet<-obs_diet %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
@@ -496,7 +496,8 @@ for(e in 1:length(especie)){
 long_temp2 <- temporal2 %>%
   pivot_longer(cols = c("PROP_OBS","PROP_EST"),
                names_to = c("kind","junk"),names_sep = " ") %>%
-  select(-junk)
+  select(-junk) %>% 
+  mutate(kind = ifelse(kind=="PROP_EST","PROP_PRED",kind))
 
 complot_year<- long_temp2 %>%
   ggplot() +
@@ -569,7 +570,8 @@ for(e in 1:length(especie)){
 long_temp2 <- temporal2 %>%
   pivot_longer(cols = c("PROP_OBS","PROP_EST"),
                names_to = c("kind","junk"),names_sep = " ") %>%
-  select(-junk)
+  select(-junk) %>% 
+  mutate(kind = ifelse(kind=="PROP_EST","PROP_PRED",kind))
 
 complot_year<- long_temp2 %>%
   ggplot() +
@@ -644,7 +646,8 @@ for(e in 1:length(especie)){
 long_temp2 <- temporal2 %>%
   pivot_longer(cols = c("PROP_OBS","PROP_EST"),
                names_to = c("kind","junk"),names_sep = " ") %>%
-  select(-junk)
+  select(-junk) %>% 
+  mutate(kind = ifelse(kind=="PROP_EST","PROP_PRED",kind))
 
 complot_year<- long_temp2 %>%
   ggplot() +
