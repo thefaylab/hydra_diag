@@ -10,6 +10,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE,
                       knitr.duplicate.label = "allow")
 suppressPackageStartupMessages(library(tidyverse))
+library(compResidual)
 library(ggforce)
 source("../R/read.report.R")
 source("../R/gettables.R")
@@ -386,6 +387,154 @@ for (sp in especies){
 
 ##### {-}
 
+##### Survey size comp Effective sample size {.tabset}
+
+```{r, eval = plot_comps}
+survsample <- temp.surv %>%
+  tibble() %>% 
+  mutate(effN_a = pred_value/(1.-pred_value),
+         effN_b = (obs_value-pred_value)^2) %>% 
+  group_by(number, area, year, species, type) %>% 
+  summarize(InpN = mean(InpN),
+            effN = sum(effN_a)/sum(effN_b), 
+            .groups = "drop") %>% 
+  I()
+#survsample
+```
+```{r, results = 'asis', eval=plot_comps}
+for (surv in unique(survsample$number)) {
+  cat("###### Survey #", surv, " \n")
+  p1 <- survsample %>% 
+  filter(number == surv) %>% 
+  ggplot() +
+  aes(x= InpN, y = effN, group = species) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, col = "blue") +
+  facet_wrap(~species, scales = "free_y") +
+  theme_bw() +
+  guides(species = "None")
+  print(p1)
+  cat(" \n\n")
+  }
+```
+
+##### {-}
+
+##### Survey size composition pearson residuals (survey 1)
+```{r, eval = plot_comps}
+# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
+# a hack
+temp.surv.all <- temp.surv
+
+temp.surv <- temp.surv %>% dplyr::filter(number ==1)
+
+### survey, species = 1 to 11
+#tiff(paste0(plotdir,"bubbleplot_survey.jpeg"), width=3000, height=2500, res=250)
+ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
+  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
+#dev.off()
+
+temp.surv <- temp.surv.all
+```
+
+##### Survey size composition pearson residuals (survey 2)
+```{r, eval = plot_comps}
+# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
+# a hack
+temp.surv.all <- temp.surv
+
+temp.surv <- temp.surv %>% dplyr::filter(number ==2)
+
+### survey, species = 1 to 11
+#tiff(paste0(plotdir,"bubbleplot_survey.jpeg"), width=3000, height=2500, res=250)
+ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
+  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
+#dev.off()
+
+temp.surv <- temp.surv.all
+```
+
+##### Survey OSA residuals
+
+```{r, eval = do_osa}
+ #sp <- "Atlantic_cod"
+plot_osa <- list()
+especies<-unique(temp.surv$species)
+  for (sp in especies) {
+
+survdat <- temp.surv %>%
+  filter(number == 1, species == sp)
+obs <- survdat %>% 
+  select(year, lenbin, obs_value) %>% 
+  mutate(obs_value = obs_value + 0.00001) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "obs_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+pred <- survdat %>% 
+  select(year, lenbin, pred_value) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "pred_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+res<-resMulti(obs,pred)
+plot_osa[[sp]] <- res
+}
+```
+
+##### Survey 1 OSA residuals {.tabset}
+```{r, eval = do_osa, results = 'asis'}
+  for (sp in especies) {
+  tmp <- plot_osa[[sp]]
+  cat("######", sp, " \n")
+  plot(tmp)
+  cat(" \n\n")
+  }
+
+```
+
+##### {-}
+
+```{r, eval = do_osa}
+#sp <- "Atlantic_cod"
+plot_osa <- list()
+especies<-unique(long_surv$species)
+  for (sp in especies) {
+
+survdat <- temp.surv %>%
+  filter(number == 2, species == sp)
+obs <- survdat %>% 
+  select(year, lenbin, obs_value) %>% 
+  mutate(obs_value = obs_value + 0.00001) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "obs_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+pred <- survdat %>% 
+  select(year, lenbin, pred_value) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "pred_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+res<-resMulti(obs,pred)
+plot_osa[[sp]] <- res
+}
+```
+
+##### Survey 2 OSA residuals {.tabset}
+
+```{r, eval = do_osa, results = 'asis'}
+  for (sp in especies) {
+  tmp <- plot_osa[[sp]]
+  cat("######", sp, " \n")
+  plot(tmp)
+  cat(" \n\n")
+  }
+```
+
+##### {-}
 
 ##### catch
 
@@ -431,6 +580,132 @@ for (sp in especies){
   tmp <- plot_catch[[sp]]
   cat("######", sp, " \n")
   print(tmp)
+  cat(" \n\n")
+  }
+```
+
+##### {-}
+
+##### Fishery size comp Effective sample size {.tabset}
+
+```{r, eval = plot_comps}
+catchsample <- temp.catch %>%
+  tibble() %>% 
+  mutate(effN_a = pred_value/(1.-pred_value),
+         effN_b = (obs_value-pred_value)^2) %>% 
+  group_by(number, area, year, species, type) %>% 
+  summarize(InpN = mean(InpN),
+            effN = sum(effN_a)/sum(effN_b), 
+            .groups = "drop") %>% 
+  I()
+#catchsample
+```
+```{r, results = 'asis', eval=plot_comps}
+for (surv in unique(catchsample$number)) {
+  cat("###### Fleet #", surv, " \n")
+  p1 <- catchsample %>% 
+  filter(number == surv) %>% 
+  ggplot() +
+  aes(x= InpN, y = effN, group = species) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, col = "blue") +
+  facet_wrap(~species, scales = "free_y") +
+  theme_bw() +
+  guides(species = "None")
+  print(p1)
+  cat(" \n\n")
+  }
+```
+##### {-}
+
+##### Catch size composition pearson residuals
+```{r, eval=plot_comps}
+#### plot 3 pearson residuals bubble plot ####
+### catch, species= 1 to 11
+#tiff(paste0(plotdir,"bubbleplot_catch.jpeg"), width=3000, height=2500, res=250)
+ggplot(temp.catch, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
+  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
+  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
+#dev.off()
+```
+
+##### Fishery Size Comp OSA residuals
+
+```{r, eval = do_osa}
+#sp <- "Atlantic_cod"
+plot_osa <- list()
+tempcat1 <- temp.catch %>% 
+  filter(number == 1)
+especies<-unique(tempcat1$species)
+  for (sp in especies) {
+
+survdat <- tempcat1 %>%
+  filter(species == sp)
+obs <- survdat %>% 
+  select(year, lenbin, obs_value) %>% 
+  mutate(obs_value = obs_value + 0.00001) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "obs_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+pred <- survdat %>% 
+  select(year, lenbin, pred_value) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "pred_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+res<-resMulti(obs,pred)
+plot_osa[[sp]] <- res
+}
+```
+
+##### Fleet 1 Size composition OSA residuals {.tabset}
+
+```{r, eval = do_osa, results = 'asis'}
+  for (sp in especies) {
+  tmp <- plot_osa[[sp]]
+  cat("######", sp, " \n")
+  plot(tmp)
+  cat(" \n\n")
+  }
+```
+
+##### {-}
+
+```{r, eval = do_osa}
+#sp <- "Atlantic_cod"
+plot_osa <- list()
+tempcat1 <- temp.catch %>% 
+  filter(number == 2)
+especies<-unique(tempcat1$species)
+  for (sp in especies) {
+survdat <- tempcat1 %>%
+  filter(species == sp)
+obs <- survdat %>% 
+  select(year, lenbin, obs_value) %>% 
+  mutate(obs_value = obs_value + 0.00001) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "obs_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+pred <- survdat %>% 
+  select(year, lenbin, pred_value) %>% 
+  pivot_wider(names_from = "year",
+              values_from = "pred_value") %>% 
+  column_to_rownames(var = "lenbin") %>% 
+  as.matrix()
+res<-resMulti(obs,pred)
+plot_osa[[sp]] <- res
+}
+```
+
+##### Fleet 2 Size composition OSA residuals {.tabset}
+
+```{r, eval = do_osa, results = 'asis'}
+  for (sp in especies) {
+  tmp <- plot_osa[[sp]]
+  cat("######", sp, " \n")
+  plot(tmp)
   cat(" \n\n")
   }
 ```
@@ -666,54 +941,7 @@ print(complot_year)
 temp.surv <- temp.surv.all
 ```
 
-##### Residuals for size composition data
 
-##### Catch size composition pearson residuals
-```{r, eval=plot_comps}
-#### plot 3 pearson residuals bubble plot ####
-### catch, species= 1 to 11
-#tiff(paste0(plotdir,"bubbleplot_catch.jpeg"), width=3000, height=2500, res=250)
-ggplot(temp.catch, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
-  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
-#dev.off()
-```
-
-##### Survey size composition pearson residuals (survey 1)
-```{r, eval = plot_comps}
-# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
-# a hack
-temp.surv.all <- temp.surv
-
-temp.surv <- temp.surv %>% dplyr::filter(number ==1)
-
-### survey, species = 1 to 11
-#tiff(paste0(plotdir,"bubbleplot_survey.jpeg"), width=3000, height=2500, res=250)
-ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
-  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
-#dev.off()
-
-temp.surv <- temp.surv.all
-```
-
-##### Survey size composition pearson residuals (survey 2)
-```{r, eval = plot_comps}
-# need to separate out surveys to run this, inpN differs by survey as does n lenbins with data
-# a hack
-temp.surv.all <- temp.surv
-
-temp.surv <- temp.surv %>% dplyr::filter(number ==2)
-
-### survey, species = 1 to 11
-#tiff(paste0(plotdir,"bubbleplot_survey.jpeg"), width=3000, height=2500, res=250)
-ggplot(temp.surv, aes(x=year, y=lenbin, size = res_abs, color=factor(residual))) +
-  geom_point(alpha=0.7) + theme(title = element_text(angle = 0, hjust = 0.5, size=15, colour="black")) +
-  facet_wrap(.~species) + labs(x="year", y="length bin", title="Pearson residuals")
-#dev.off()
-
-temp.surv <- temp.surv.all
-```
 
 #### Diet composition data
 
@@ -757,7 +985,8 @@ for (sp in especies) {
   plot_diet[[sp]] <-  pred_obs %>%
     tibble() %>% 
     filter(species == sp & number == 1) %>%
-    mutate(prop = as.numeric(prop)) %>% 
+    mutate(prop = as.numeric(prop),
+           year = as.numeric(year)) %>% 
     ggplot(aes(x = sizefit, y = prop, group = type2, fill = prey)) +
     geom_col(position = "fill") +
     scale_x_discrete(limits = limits_use,
@@ -777,7 +1006,7 @@ for (sp in especies) {
                                 # "4.o","4.e","",
                                 # "5.o","5.e","")) +
     coord_flip() +
-    facet_wrap(~as.numeric(year)) +
+    facet_wrap(~year) +
     theme_bw() +
     labs(x = "size & source (o=observed, e=expected)",
          fill = "prey",
@@ -826,7 +1055,8 @@ for (sp in especies) {
   plot_diet[[sp]] <-  pred_obs %>%
     tibble() %>% 
     filter(species == sp & number == 2) %>%
-    mutate(prop = as.numeric(prop)) %>% 
+    mutate(prop = as.numeric(prop),
+           year = as.numeric(year)) %>% 
     ggplot(aes(x = sizefit, y = prop, group = type2, fill = prey)) +
     geom_col(position = "fill") +
     scale_x_discrete(limits = limits_use,
@@ -877,105 +1107,135 @@ for (sp in especies){
 
 ##### {-}
 
-##### Effective sample size plots
+##### Diet composition effective sample size {.tabset}
 
-#### plot 5 survey sample size plots
-
-```{r, eval=FALSE}
-dat_surv <- read.csv("../outputs/sizecomps.csv", header = T)
-dat_surv<-dat_surv %>% filter (label=="survey")
-
-temp_surv = numeric()
-number = numeric(); number = sort(unique(dat_surv$number))
-for (n in 1:length(number)) {
-  pos0 = numeric(); pos0 = which(dat_surv$number == number[n])
-
-  species = numeric(); species = sort(unique(dat_surv$species[pos0]))
-  for (e in 1:length(species)) {
-    pos1 = numeric(); pos1 = which(dat_surv$species[pos0] == species[e])
-
-    year = numeric(); year = sort(unique(dat_surv$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1
-    for (y in 1:length(year)) {
-      pos2 = numeric(); pos2 = which(dat_surv$year[pos0][pos1] == year[y])
-
-      total=numeric()
-      sum1=sum(dat_surv$pred_value[pos0][pos1][pos2]*(1-dat_surv$pred_value[pos0][pos1][pos2]))
-      sum2=sum((dat_surv$obs_value[pos0][pos1][pos2] - dat_surv$pred_value[pos0][pos1][pos2])^2)
-      total= sum1/sum2
-
-      tt1 = numeric()
-      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_surv$InpN[pos0][pos1][pos2]), EffN=total)
-      temp_surv = rbind(temp_surv, tt1)
-    }
+```{r, eval = plot_comps}
+dietsample <- temp.diet %>%
+  tibble() %>% 
+  mutate(effN_a = pred_value/(1.-pred_value),
+         effN_b = (obs_value-pred_value)^2) %>% 
+  group_by(number, year, species, lenbin) %>% 
+  summarize(InpN = mean(InpN),
+            effN = sum(effN_a)/sum(effN_b), 
+            .groups = "drop") %>% 
+  I()
+#dietsample
+```
+```{r, results = 'asis', eval=plot_comps}
+for (surv in unique(dietsample$number)) {
+  cat("###### Survey #", surv, " \n")
+  p1 <- dietsample %>% 
+  filter(number == surv) %>% 
+  ggplot() +
+  aes(x= InpN, y = effN, group = species) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, col = "blue") +
+  facet_wrap(~species, scales = "free_y") +
+  theme_bw() +
+  guides(species = "None")
+  print(p1)
+  cat(" \n\n")
   }
-}
 ```
 
-```{r, eval=FALSE}
-#sp<-1
 
-for (isurvey in unique(temp_surv$number)) {
+<!-- #### plot 5 survey sample size plots -->
 
-  plot_size <- temp_surv %>% filter(number==isurvey) %>%
-    ggplot() +
-    aes(x=EffN, y = InpN) +
-    geom_point() +
-    facet_wrap(~species)
+<!-- ```{r, eval=FALSE} -->
+<!-- dat_surv <- read.csv("../outputs/sizecomps.csv", header = T) -->
+<!-- dat_surv<-dat_surv %>% filter (label=="survey") -->
 
-#  ggsave(paste0(plotdir,"samplesize_survey_",isurvey,".jpeg"), plot_size, width = 10, height = 7, #dpi = 300)#, width=3000, height=2500, res=250)
+<!-- temp_surv = numeric() -->
+<!-- number = numeric(); number = sort(unique(dat_surv$number)) -->
+<!-- for (n in 1:length(number)) { -->
+<!--   pos0 = numeric(); pos0 = which(dat_surv$number == number[n]) -->
 
-  print(plot_size)
-}
-```
+<!--   species = numeric(); species = sort(unique(dat_surv$species[pos0])) -->
+<!--   for (e in 1:length(species)) { -->
+<!--     pos1 = numeric(); pos1 = which(dat_surv$species[pos0] == species[e]) -->
 
-#### plot 5 catch sample size plots
+<!--     year = numeric(); year = sort(unique(dat_surv$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1 -->
+<!--     for (y in 1:length(year)) { -->
+<!--       pos2 = numeric(); pos2 = which(dat_surv$year[pos0][pos1] == year[y]) -->
 
-```{r, eval=FALSE}
-dat_catch <- read.csv("../outputs/sizecomps.csv", header = T)
-dat_catch<-dat_catch %>% filter (label=="catch")
+<!--       total=numeric() -->
+<!--       sum1=sum(dat_surv$pred_value[pos0][pos1][pos2]*(1-dat_surv$pred_value[pos0][pos1][pos2])) -->
+<!--       sum2=sum((dat_surv$obs_value[pos0][pos1][pos2] - dat_surv$pred_value[pos0][pos1][pos2])^2) -->
+<!--       total= sum1/sum2 -->
 
-temp_catch = numeric()
-number = numeric(); number = sort(unique(dat_catch$number))
-for (n in 1:length(number)) {
-  pos0 = numeric(); pos0 = which(dat_catch$number == number[n])
+<!--       tt1 = numeric() -->
+<!--       tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_surv$InpN[pos0][pos1][pos2]), EffN=total) -->
+<!--       temp_surv = rbind(temp_surv, tt1) -->
+<!--     } -->
+<!--   } -->
+<!-- } -->
+<!-- ``` -->
 
-  species = numeric(); species = sort(unique(dat_catch$species[pos0]))
-  for (e in 1:length(species)) {
-    pos1 = numeric(); pos1 = which(dat_catch$species[pos0] == species[e])
+<!-- ```{r, eval=FALSE} -->
+<!-- #sp<-1 -->
 
-    year = numeric(); year = sort(unique(dat_catch$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1
-    for (y in 1:length(year)) {
-      pos2 = numeric(); pos2 = which(dat_catch$year[pos0][pos1] == year[y])
+<!-- for (isurvey in unique(temp_surv$number)) { -->
 
-      total=numeric()
-      sum1=sum(dat_catch$pred_value[pos0][pos1][pos2]*(1-dat_catch$pred_value[pos0][pos1][pos2]))
-      sum2=sum((dat_catch$obs_value[pos0][pos1][pos2] - dat_catch$pred_value[pos0][pos1][pos2])^2)
-      total= sum1/sum2
+<!--   plot_size <- temp_surv %>% filter(number==isurvey) %>% -->
+<!--     ggplot() + -->
+<!--     aes(x=EffN, y = InpN) + -->
+<!--     geom_point() + -->
+<!--     facet_wrap(~species) -->
 
-      tt1 = numeric()
-      tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_catch$InpN[pos0][pos1][pos2]), EffN=total)
-      temp_catch = rbind(temp_catch, tt1)
-    }
-  }
-}
-```
+<!-- #  ggsave(paste0(plotdir,"samplesize_survey_",isurvey,".jpeg"), plot_size, width = 10, height = 7, #dpi = 300)#, width=3000, height=2500, res=250) -->
 
-```{r, eval=FALSE}
-#sp<-1
+<!--   print(plot_size) -->
+<!-- } -->
+<!-- ``` -->
 
-for (ifleet in unique(temp_catch[,1])) {
+<!-- #### plot 5 catch sample size plots -->
 
-  plot_size<- temp_catch %>% filter(number==ifleet) %>%
-    ggplot() +
-    aes(x=EffN, y = InpN) +
-    geom_point() +
-    facet_wrap(~species)
+<!-- ```{r, eval=FALSE} -->
+<!-- dat_catch <- read.csv("../outputs/sizecomps.csv", header = T) -->
+<!-- dat_catch<-dat_catch %>% filter (label=="catch") -->
 
-#  ggsave(paste0(plotdir,"samplesize_catch_",ifleet,".jpeg"), plot_size, width = 10, height = 7, #dpi = 300)#, width=3000, height=2500, res=250)
+<!-- temp_catch = numeric() -->
+<!-- number = numeric(); number = sort(unique(dat_catch$number)) -->
+<!-- for (n in 1:length(number)) { -->
+<!--   pos0 = numeric(); pos0 = which(dat_catch$number == number[n]) -->
 
-  print(plot_size)
-}
-```
+<!--   species = numeric(); species = sort(unique(dat_catch$species[pos0])) -->
+<!--   for (e in 1:length(species)) { -->
+<!--     pos1 = numeric(); pos1 = which(dat_catch$species[pos0] == species[e]) -->
+
+<!--     year = numeric(); year = sort(unique(dat_catch$year[pos0][pos1])) #pos1 hace que se trabaje por ano, seleccion de valores que cumplen esa condicion que estan guardados en el pos1 -->
+<!--     for (y in 1:length(year)) { -->
+<!--       pos2 = numeric(); pos2 = which(dat_catch$year[pos0][pos1] == year[y]) -->
+
+<!--       total=numeric() -->
+<!--       sum1=sum(dat_catch$pred_value[pos0][pos1][pos2]*(1-dat_catch$pred_value[pos0][pos1][pos2])) -->
+<!--       sum2=sum((dat_catch$obs_value[pos0][pos1][pos2] - dat_catch$pred_value[pos0][pos1][pos2])^2) -->
+<!--       total= sum1/sum2 -->
+
+<!--       tt1 = numeric() -->
+<!--       tt1 = data.frame(number=number[n],species=species[e],Year=year[y],InpN=unique(dat_catch$InpN[pos0][pos1][pos2]), EffN=total) -->
+<!--       temp_catch = rbind(temp_catch, tt1) -->
+<!--     } -->
+<!--   } -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ```{r, eval=FALSE} -->
+<!-- #sp<-1 -->
+
+<!-- for (ifleet in unique(temp_catch[,1])) { -->
+
+<!--   plot_size<- temp_catch %>% filter(number==ifleet) %>% -->
+<!--     ggplot() + -->
+<!--     aes(x=EffN, y = InpN) + -->
+<!--     geom_point() + -->
+<!--     facet_wrap(~species) -->
+
+<!-- #  ggsave(paste0(plotdir,"samplesize_catch_",ifleet,".jpeg"), plot_size, width = 10, height = 7, #dpi = 300)#, width=3000, height=2500, res=250) -->
+
+<!--   print(plot_size) -->
+<!-- } -->
+<!-- ``` -->
 
 ### Model output (derived quantities)
 
