@@ -1051,7 +1051,7 @@ if(skill){
     dplyr::left_join(omlist_ss$funct.group_ss[, c("Code", "Name")]) %>%
     dplyr::left_join(nitro) %>%
     dplyr::mutate(recnums = (recwt * 50000000.0 / omlist_ss$biol$redfieldcn) / Nsum,
-                  logrec = log(recnums),
+                  logrec = log(recnums/1000),
                   year = Time/365,
                   year = year-fitstartyr,
                   species = Name) %>%
@@ -1090,7 +1090,7 @@ est_recruits %>%
 ```{r, eval=skill}
 
 recskill <- ggplot() +
-  geom_line(data=truerec, aes(x=year,y=recnums/1000, color="True R"), 
+  geom_line(data=truerec, aes(x=year,y=recnums/1000000, color="True R"), 
             alpha = 10/10) +
   geom_point(data=est_recruits, aes(x=year, y=value, color="Hydra Est R"),
              alpha = 10/10) + 
@@ -1106,7 +1106,25 @@ recskill +
 
 
 ```
+```{r, eval=skill}
 
+recskill <- ggplot() +
+  geom_line(data=truerec, aes(x=year,y=logrec, color="True R"), 
+            alpha = 10/10) +
+  geom_point(data=est_recruits, aes(x=year, y=log_rec, color="Hydra Est R"),
+             alpha = 10/10) + 
+  theme_minimal() +
+  theme(legend.position = "top") +
+  labs(x = "Year",
+       y = "Log Recruitment",
+       title = "Log Recruitment skill, Hydra estimated vs Atlantis; check units",
+       colour = "")
+
+recskill +
+  facet_wrap(~species, scales="free") 
+
+
+```
 #### Biomass time series
 
 ```{r}
