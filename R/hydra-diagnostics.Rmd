@@ -19,11 +19,45 @@ source("../R/gettables.R")
 
 ### load data objects
 
-```{r}
+```{r, eval=plot_comps}
 #datafile object
 # add switch to read from rda or rds depending on string of input
 #load("../test-data/hydraDataList.rda")
 hydraDataList <- readRDS(data_object)
+
+# TO BE GENERALIZED: THIS IS REAL GB DATA
+# data objects are from mskeyrun data package, install as below
+# remotes::install_github("NOAA-EDAB/ms-keyrun")
+# enter with hydraplots call as lengths <- "path-to-file"
+nbins <- hydraDataList$Nsizebins 
+
+bindef <- hydraDataList$binwidth 
+
+modbins <- hydraDataList$binwidth %>%
+    tibble::rownames_to_column("Name") %>%
+    tidyr::pivot_longer(!Name, names_to = "sizebin", values_to = "binwidth") %>%
+    dplyr::group_by(Name) %>%
+    dplyr::mutate(modbin.min = FSA::pcumsum(binwidth),
+                  modbin.max = cumsum(binwidth)) %>%
+    dplyr::mutate(sizebin = factor(sizebin, levels = unique(sizebin))) %>%
+    mutate(Name = gsub("_", " ", Name ))
+
+surv_rawlength <- mskeyrun::realSurveyLennumcomp %>%
+  filter(variable == "numbers") %>%
+  group_by(Name, season, year) %>%
+  mutate(totN = sum(value)) %>%
+  ungroup() %>%
+  left_join(modbins) %>%
+  filter(modbin.min <= lenbin & lenbin < modbin.max)
+
+fish_rawlength <- mskeyrun::realFisheryLencomp %>%
+  filter(variable == "abundance") %>%
+  group_by(Name, year) %>%
+  mutate(totN = sum(value)) %>%
+  ungroup() %>%
+  left_join(modbins) %>%
+  filter(modbin.min <= lenbin & lenbin < modbin.max)
+
 ```
 
 ### plot data  (maybe put at end)
@@ -98,9 +132,111 @@ p3 <- catch_obs %>%
 
 #### Size composition data
 
+This is size composition data (numbers) prior to aggregation into length bins for input. Bin designations are overlaid. 
+
+#### survey 1 length compositions {.tabset}
+
+```{r}
+
+#colors from http://medialab.github.io/iwanthue/
+
+plotlen <- function(dat, effN=1){
+  
+  cols <- c("#a95700",
+            "#003d9f",
+            "#019a41",
+            "#530042",
+            "#ffb17e")
+  
+  ggplot(mapping=aes(x=lenbin)) +
+    geom_bar(data=dat, aes(weight = value/totN, fill=sizebin)) +
+    theme_minimal() +
+    theme(legend.position = "bottom") +
+    xlab("length (cm)") +
+    ylab("proportion") + 
+    scale_colour_manual(name="", values=cols) +
+    labs(subtitle = paste(dat$ModSim,
+                          dat$Name)) +
+    facet_wrap(~year, dir="v", scales = "free_y")
+
+}
+
+
+```
+
+```{r, results = 'asis', fig.height=10, fig.width=9, eval=plot_comps}
+
+  lcompsub <- surv_rawlength %>% 
+    filter(season %in% "FALL") %>% 
+    arrange(Name, season, year) %>%
+    group_by(Name) %>%
+    group_map(~ plotlen(.x), keep = TRUE)
+
+  names(lcompsub) <- hydraDataList$speciesList
+  
+  for(i in 1:length(lcompsub)) {
+    cat("  \n##### ", names(lcompsub)[i],"  \n")
+    print(lcompsub[[i]])
+  }
+  cat("  \n")
+
+```
+
+#### {-}
+
+#### survey 2 length compositions {.tabset}
+
+```{r, results = 'asis', fig.height=10, fig.width=9, eval=plot_comps}
+
+  lcompsub <- surv_rawlength %>% 
+    filter(season %in% "SPRING") %>% 
+    arrange(Name, season, year) %>%
+    group_by(Name) %>%
+    group_map(~ plotlen(.x), keep = TRUE)
+
+  names(lcompsub) <- hydraDataList$speciesList
+  
+  for(i in 1:length(lcompsub)) {
+    cat("  \n##### ", names(lcompsub)[i],"  \n")
+    print(lcompsub[[i]])
+  }
+  cat("  \n")
+
+```
+
+
+#### {-}
+
+#### fishery raw length compositions {.tabset}
+
+```{r, results = 'asis', fig.height=10, fig.width=9, eval=plot_comps}
+
+  lcompsub <- fish_rawlength %>% 
+    #filter(season %in% "SPRING") %>% 
+    arrange(Name, fishery, year) %>%
+    group_by(Name) %>%
+    group_map(~ plotlen(.x), keep = TRUE)
+
+  names(lcompsub) <- hydraDataList$speciesList
+  
+  for(i in 1:length(lcompsub)) {
+    cat("  \n##### ", names(lcompsub)[i],"  \n")
+    print(lcompsub[[i]])
+  }
+  cat("  \n")
+
+```
+
+#### {-}
+
 #### Diet composition data
 
-#### Show moar inputs
+```{r}
+
+```
+
+
+#### Show more inputs
 
 
 
@@ -369,8 +505,7 @@ especies<-unique(long_surv$species)
     #ggsave(paste0(plotdir,"complot_surv_",sp,".jpeg"), plot_surv, width = 10, height = 7, dpi = 300)#, width=3000, height=2500, res=250)
     
   }
-  
-  
+
 
 ```
 
@@ -518,8 +653,13 @@ pred <- survdat %>%
               values_from = "pred_value") %>% 
   column_to_rownames(var = "lenbin") %>% 
   as.matrix()
+if(dim(pred)[1] == 0){plot_osa[[sp]] <- NULL}
+else{
 res<-resMulti(obs,pred)
 plot_osa[[sp]] <- res
+}
+
+
 }
 ```
 
@@ -529,7 +669,7 @@ plot_osa[[sp]] <- res
   for (sp in especies) {
   tmp <- plot_osa[[sp]]
   cat("######", sp, " \n")
-  plot(tmp)
+  ifelse(!is.null(tmp), plot(tmp), print(tmp))
   cat(" \n\n")
   }
 ```
@@ -1006,7 +1146,7 @@ for (sp in especies) {
                                 # "4.o","4.e","",
                                 # "5.o","5.e","")) +
     coord_flip() +
-    facet_wrap(~year) +
+    facet_wrap(~year, dir="v") +
     theme_bw() +
     labs(x = "size & source (o=observed, e=expected)",
          fill = "prey",
@@ -1076,7 +1216,7 @@ for (sp in especies) {
                                 # "4.o","4.e","",
                                 # "5.o","5.e","")) +
     coord_flip() +
-    facet_wrap(~as.numeric(year)) +
+    facet_wrap(~as.numeric(year), dir="v") +
     theme_bw() +
     labs(x = "size & source (o=observed, e=expected)",
          fill = "prey",
