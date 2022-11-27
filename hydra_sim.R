@@ -69,6 +69,8 @@ nll_catch<-output$nll_catch_size
 
 inpN<-unique(catch_size$inpN)
 
+######## for --> to include each inpN and length bin (to sum 1)
+
 sim_list$catchsize <- catch_size %>%
   mutate(obs = (rmultinom(nrow(.), inpN, pred_catchsize)))
 
