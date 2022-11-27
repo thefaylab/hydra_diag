@@ -2,13 +2,11 @@ source("R/read.report.R")
 source("R/gettables.R")
 library(tidyverse)
 
-# mackerel, herring, spiny dogfish and cod
-
 ### READ DATA ###
 
 load("test-data/hydraDataList.rda")
 repfile <- c("test-data/hydra_sim.rep")
-#output<-reptoRlist(repfile)
+output<-reptoRlist(repfile)
 
 ### CATCH AND SURVEY BIOMASS ###
 obs_surveyB <- hydraDataList$observedBiomass
@@ -37,12 +35,11 @@ isim <- 1
 
 # replace index with simulated data
 sim_list <- NULL
-sim_list$index <- obs_catchB %>%
+sim_list$catch <- obs_catchB %>%
   mutate(obs = rnorm(nrow(.), pred_catch, cv_catch))
-#do similar for other data tables
 
-# store simulated object
 sim_data[[isim]] <- sim_list
+
 
 ##### SURVEY BIOMASS SIMULATED DATA ######
 
@@ -51,13 +48,42 @@ cv_survey<-biomass$cv
 
 sim_list$survey <- obs_surveyB %>%
   mutate(obs = (rnorm(nrow(.), pred_survey, cv_survey)))
-#do similar for other data tables
 
 # store simulated object
 sim_data[[isim]] <- sim_list
 
 
-### CATCH AND SURVEY SIZE COMPOSITION ###
+#### CATCH SIZE COMPOSITION SIMULATED DATA ####
+
+catch_size <- hydraDataList$observedCatchSize %>% tibble()
+catch_size<-catch_size %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
+  mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
+         label = rep("catch",nrow(.)),
+         species = hydraDataList$speciesList[species])# %>% filter(value != -999)
+#catch_size<- catch_size %>% filter(value != -999)
+catch_size$value[which(catch_size$value == -999)] = 0.000001
+catch_size <- select(catch_size, -label)
+
+pred_catchsize<-output$pred_catch_size
+nll_catch<-output$nll_catch_size
+
+inpN<-unique(catch_size$inpN)
+
+sim_list$catchsize <- catch_size %>%
+  mutate(obs = (rmultinom(nrow(.), inpN, pred_catchsize)))
+
+# store simulated object
+sim_data[[isim]] <- sim_list
+
+write.csv(sim_list[["catchsize"]], file = "catchsize.csv", row.names = T)
+
+
+
+
+
+
+
+#### SURVEY SIZE COMPOSITION SIMULATED DATA ####
 
 surv_size <- hydraDataList$observedSurvSize %>% tibble()
 surv_size <- surv_size %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>% #filter(value != -999)%>%
@@ -66,62 +92,51 @@ surv_size <- surv_size %>% pivot_longer(cols=6:ncol(.), names_to = "lenbin") %>%
          label = rep("survey",nrow(.)),
          species = hydraDataList$speciesList[species])
 #surv_size<- surv_size %>% filter(value != -999)
-#surv_size$value[which(surv_size$value == -999)] = 0.00001
+surv_size$value[which(surv_size$value == -999)] = 0.000001
+surv_size <- select(surv_size, -label)
 
-pred_surv<-output$pred_survey_size
-surv_size$pred_surv<-pred_surv
+pred_survsize<-output$pred_survey_size
 nll_survey<-output$nll_survey_size
-surv_size$nll_surv<-nll_survey
 
-colnames(surv_size) <- c('number','year','species','type','InpN','lenbin','obs_value','label',
-                         'pred_value','nll')
+inpN<-unique(surv_size$inpN)
 
+sim_list$survsize <- surv_size %>%
+  mutate(obs = (rmultinom(nrow(.), inpN, pred_survsize)))
 
-catch_size <- hydraDataList$observedCatchSize %>% tibble()
-catch_size<-catch_size %>% pivot_longer(cols=7:ncol(.), names_to = "lenbin") %>%
-  mutate(lenbin = as.integer(str_remove(lenbin, "sizebin")),
-         label = rep("catch",nrow(.)),
-         species = hydraDataList$speciesList[species])# %>% filter(value != -999)
-#catch_size<- catch_size %>% filter(value != -999)
-#catch_size$value[which(catch_size$value == -999)] = 0.00001
+# store simulated object
+sim_data[[isim]] <- sim_list
 
-pred_catch<-output$pred_catch_size
-catch_size$pred_catch<-pred_catch
-nll_catch<-output$nll_catch_size
-catch_size$nll_catch<-nll_catch
-
-colnames(catch_size) <- c('number','area','year','species','type','InpN','lenbin','obs_value','label',
-                          'pred_value','nll')
+write.csv(sim_list[["survsize"]], file = "survsize.csv", row.names = T)
 
 
-### DIET COMPOSITION ###
+
+#### DIET COMPOSITION SIMULATED DATA ####
 
 diet_comp <- hydraDataList$observedSurvDiet %>% tibble()
 diet_comp<-diet_comp %>% pivot_longer(cols=6:ncol(.), names_to = "prey") %>%
   mutate(#lenbin = as.integer(str_remove(lenbin, "V")),
     species = hydraDataList$speciesList[species],
     label = rep("diet",nrow(.)))
+diet_comp$value[which(diet_comp$value == -999)] = 0.000001
+diet_comp <- select(diet_comp, -label)
+
 #diet_comp<- diet_comp  %>% filter(value != -999)
 #%>%
 #  I()
+
 pred_diet<-output$pred_dietprop
-
 if (length(pred_diet)!=nrow(diet_comp)) diet_comp <- diet_comp %>% filter(value != 0)
-
-diet_comp$pred_diet<-pred_diet
 nll_diet<-output$nll_dietprop
-diet_comp$nll_diet<-nll_diet
 
-colnames(diet_comp) <- c('number','year','species','lenbin','InpN','prey','obs_value','label', 'pred_value','nll')
+inpN<-unique(diet_comp$inpN)
 
+sim_list$dietcomp <- diet_comp %>%
+  mutate(obs = (rmultinom(nrow(.), inpN, pred_diet)))
 
+# store simulated object
+sim_data[[isim]] <- sim_list
 
-
-
-
-
-
-
+write.csv(sim_list[["dietcomp"]], file = "dietcomp.csv", row.names = T)
 
 
 
