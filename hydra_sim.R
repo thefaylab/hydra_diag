@@ -167,9 +167,9 @@ for (n in 1:length(number)) {
     for(y in 1:length(year)){
       pos2 = numeric(); pos2 = which(diet_comp$year[pos0][pos1]== year[y])
 
-  prey = numeric(); prey = sort(unique(diet_comp$prey[pos0][pos1][pos2]))
-    for(e in 1:length(prey)){
-      pos3 = numeric(); pos3 = which(diet_comp$prey[pos0][pos1][pos2] == prey[e])
+  lenbin = numeric(); lenbin = sort(unique(diet_comp$sizebin[pos0][pos1][pos2]))
+    for(l in 1:length(lenbin)){
+      pos3 = numeric(); pos3 = which(diet_comp$sizebin[pos0][pos1][pos2] == lenbin[l])
 
       temp = numeric(); temp = rmultinom(1, unique(diet_comp$inpN[pos0][pos1][pos2][pos3]), pred_diet[pos0][pos1][pos2][pos3])
       temporal1 = c(temporal1, temp)
