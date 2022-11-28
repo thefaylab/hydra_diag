@@ -178,6 +178,7 @@ for (n in 1:length(number)) {
  }
 }
 
+### check line 174 .... sample size 300?
 diet_comp$obs = temporal1
 sim_list$dietcomp<-diet_comp
 
