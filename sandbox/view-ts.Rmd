@@ -1,0 +1,83 @@
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+tsdatfile <- "../hydra_sim/hydra_sim_NOBA-ts.dat"
+Nobs <- 1680
+repfile <- "../hydra_sim/hydra_sim.rep"
+survey_obs <- read_table(repfile, n_max = Nobs, skip = 17618, col_names = FALSE)
+colnames(survey_obs) <- c("survey", "year", "spp", "obs", "cv", "pred", "resid", "nll")
+Nobs <- 720
+catch_obs <- read_table(repfile, n_max = Nobs, skip = 19300, col_names = FALSE)
+colnames(catch_obs) <- c("fleet", "area", "year", "spp", "obs", "cv", "pred", "resid", "nll")
+```
+
+```{r}
+survey_obs <- survey_obs %>% 
+  mutate(obs = obs + 1e-07,
+         log_obs = log(obs),
+         log_pred = log(pred),
+         log_lo = log_obs - 1.96*cv,
+         log_hi = log_obs + 1.96*cv,
+         obs_lo = exp(log_lo),
+         obs_hi = exp(log_hi))
+```
+
+survey 1
+```{r}
+p1 <- survey_obs %>% 
+  filter(survey == 1) %>% 
+  ggplot() +
+  aes(x= year, y = log_obs, group = spp) +
+  geom_errorbar(aes(ymin = log_lo, ymax = log_hi)) +
+  geom_point() +
+  geom_line(aes(x=year, y=log_pred), col = "blue") +
+  facet_wrap(~spp, scales = "free_y") +
+  theme_bw() +
+  guides(spp = "None")
+p1
+```
+
+survey 2
+```{r}
+p2 <- survey_obs %>% 
+  filter(survey == 2) %>% 
+  ggplot() +
+  aes(x= year, y = log_obs, group = spp) +
+  geom_errorbar(aes(ymin = log_lo, ymax = log_hi)) +
+  geom_point() +
+  geom_line(aes(x=year, y=log_pred), col = "blue") +
+  facet_wrap(~spp, scales = "free_y") +
+  theme_bw() +
+  guides(spp = "None")
+p2
+```
+
+catches
+
+```{r}
+catch_obs <- catch_obs %>% 
+  mutate(obs = obs + 1e-07,
+         log_obs = log(obs),
+         log_pred = log(pred),
+         log_lo = log_obs - 1.96*cv,
+         log_hi = log_obs + 1.96*cv,
+         obs_lo = exp(log_lo),
+         obs_hi = exp(log_hi))
+```
+
+catch plots
+```{r}
+p3 <- catch_obs %>% 
+  ggplot() +
+  aes(x= year, y = log_obs, group = spp) +
+  geom_errorbar(aes(ymin = log_lo, ymax = log_hi)) +
+  geom_point() +
+  geom_line(aes(x=year, y=log_pred), col = "blue") +
+  facet_wrap(~spp, scales = "free_y") +
+  theme_bw() +
+  guides(spp = "None")
+p3
+```
